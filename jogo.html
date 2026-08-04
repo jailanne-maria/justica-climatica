@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Reserva em Pé: simulação onde cada personagem faz sua parte para salvar a floresta do Acre.">
+  <title>Reserva em Pé · Cada um faz sua parte</title>
+  <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="jogo.css">
+</head>
+<body>
+  <div class="folhas" aria-hidden="true">
+    <span>🍃</span><span>🌿</span><span>🍂</span><span>🌱</span><span>🍃</span><span>🌿</span>
+  </div>
+
+  <header class="cabecalho">
+    <nav class="menu">
+      <a href="index.html" class="logo">🌳 Reserva&nbsp;em&nbsp;Pé</a>
+      <ul class="menu-lista">
+        <li><a href="index.html">Voltar ao site</a></li>
+      </ul>
+    </nav>
+  </header>
+
+  <main class="jogo">
+    <section class="jogo-intro" id="intro">
+      <h1>Reserva em Pé</h1>
+      <p>A floresta do Acre está ameaçada. O gado avança com queimadas, e o desmatamento só cresce. Mas você tem uma arma antiga e poderosa: <strong>o empate</strong> — a tática dos extrativistas que, como Chico Mendes ensinou, impede o desmatamento com coragem e união.</p>
+      <p>Você vai acompanhar <strong>4 personagens</strong> durante <strong>12 anos</strong> e <strong>3 fases de evolução</strong>. Cada um faz sua parte no dia a dia para manter a floresta em pé — inclusive no período eleitoral.</p>
+      <button class="botao" id="botao-comecar">🌳 Começar a jornada</button>
+    </section>
+
+    <section class="historia" id="historia" hidden>
+      <div class="historia-cartao">
+        <p class="fase-etiqueta" id="historia-fase"></p>
+        <h2 id="historia-titulo"></h2>
+        <p id="historia-texto"></p>
+        <button class="botao" id="botao-historia">Continuar →</button>
+      </div>
+    </section>
+
+    <section class="painel" id="painel" hidden>
+      <div class="barra-topo">
+        <div class="info-ano">Ano <span id="ano">1</span>/12</div>
+        <div class="info-fase" id="info-fase">Fase 1 · Resistir</div>
+        <div class="info-dinheiro">💰 R$ <span id="dinheiro">30.000</span></div>
+      </div>
+
+      <div class="medidores">
+        <div class="medidor">
+          <div class="medidor-cabecalho">
+            <span>🌲 Floresta em pé</span>
+            <span id="floresta-texto">70%</span>
+          </div>
+          <div class="barra"><div class="barra-preenchimento floresta" id="floresta-barra" style="width:70%"></div></div>
+        </div>
+        <div class="medidor">
+          <div class="medidor-cabecalho">
+            <span>🐄 Pressão do boi e do agro</span>
+            <span id="pressao-texto">30%</span>
+          </div>
+          <div class="barra"><div class="barra-preenchimento pressao" id="pressao-barra" style="width:30%"></div></div>
+        </div>
+      </div>
+
+      <div class="avisos">
+        <div class="medidor">
+          <div class="medidor-cabecalho">
+            <span>🌰 Extrativistas</span>
+            <span id="extrativista-texto">50</span>
+          </div>
+          <div class="barra"><div class="barra-preenchimento extrativista" id="extrativista-barra" style="width:50%"></div></div>
+        </div>
+        <div class="medidor">
+          <div class="medidor-cabecalho">
+            <span>🐟 Ribeirinhos</span>
+            <span id="ribeirinho-texto">50</span>
+          </div>
+          <div class="barra"><div class="barra-preenchimento ribeirinho" id="ribeirinho-barra" style="width:50%"></div></div>
+        </div>
+        <div class="medidor">
+          <div class="medidor-cabecalho">
+            <span>🏙️ Amazônia urbana</span>
+            <span id="urbano-texto">50</span>
+          </div>
+          <div class="barra"><div class="barra-preenchimento urbano" id="urbano-barra" style="width:50%"></div></div>
+        </div>
+        <div class="medidor">
+          <div class="medidor-cabecalho">
+            <span>🗳️ Apoio político</span>
+            <span id="apoio-texto">30</span>
+          </div>
+          <div class="barra"><div class="barra-preenchimento apoio" id="apoio-barra" style="width:30%"></div></div>
+        </div>
+      </div>
+
+      <div class="layout-jogo">
+        <section class="acoes">
+          <h2>Cada personagem faz sua parte</h2>
+          <div class="grade-acoes" id="grade-acoes"></div>
+          <button class="botao botao-avancar" id="botao-avancar" disabled>Passar o ano →</button>
+        </section>
+
+        <section class="historico">
+          <h2>Acontecimentos</h2>
+          <div class="log" id="log"></div>
+        </section>
+      </div>
+    </section>
+
+    <section class="fim" id="fim" hidden>
+      <h2 id="fim-titulo"></h2>
+      <p id="fim-mensagem"></p>
+      <button class="botao" id="botao-reiniciar">🌱 Plantar de novo</button>
+    </section>
+  </main>
+
+  <footer class="rodape">
+    <p>Inspirado na luta real dos povos do Acre: empates, Chico Mendes e as reservas extrativistas.</p>
+  </footer>
+
+  <script src="jogo.js"></script>
+</body>
+</html>

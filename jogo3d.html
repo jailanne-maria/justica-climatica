@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Reserva em Pé 3D: ande pela floresta, converse com os personagens e proteja a reserva do Acre.">
+  <title>Reserva em Pé 3D</title>
+  <link rel="stylesheet" href="jogo3d.css">
+</head>
+<body>
+
+  <div id="cena3d"></div>
+
+  <div class="tela-intro" id="tela-intro">
+    <h1>🌳 Reserva em Pé <span>3D</span></h1>
+    <p>Ande pela floresta do Acre com <strong>WASD</strong> ou <strong>setas</strong>. Aproxime-se de um personagem e aperte <strong>E</strong> para conversar e escolher a ação do ano de cada um. O gado avança, as árvores caem — impeça isso com empates e educação.</p>
+    <p><strong>Meta:</strong> 12 anos com floresta acima de 50% e comunidades acima de 40%.</p>
+    <button class="botao" id="botao-comecar">🌱 Entrar na floresta</button>
+  </div>
+
+  <div class="modal-historia" id="modal-historia" hidden>
+    <div class="modal-cartao">
+      <p class="fase-etiqueta" id="historia-fase"></p>
+      <h2 id="historia-titulo"></h2>
+      <p id="historia-texto"></p>
+      <button class="botao" id="botao-historia">Continuar →</button>
+    </div>
+  </div>
+
+  <div class="hud" id="hud" hidden>
+    <div class="hud-topo">
+      <div class="hud-box">Ano <span id="ano">1</span>/12</div>
+      <div class="hud-box fase" id="info-fase">Fase 1 · Resistir</div>
+      <div class="hud-box dinheiro">💰 R$ <span id="dinheiro">30.000</span></div>
+    </div>
+
+    <div class="hud-metros">
+      <div class="metro">
+        <span class="rotulo">🌲 Floresta</span>
+        <div class="barra"><div class="preenchimento floresta" id="barra-floresta" style="width:70%"></div></div>
+        <span class="valor" id="valor-floresta">70%</span>
+      </div>
+      <div class="metro">
+        <span class="rotulo">🐄 Pressão do boi</span>
+        <div class="barra"><div class="preenchimento pressao" id="barra-pressao" style="width:30%"></div></div>
+        <span class="valor" id="valor-pressao">30%</span>
+      </div>
+      <div class="metro">
+        <span class="rotulo">🌰 Extrativistas</span>
+        <div class="barra"><div class="preenchimento extrativista" id="barra-extrativista" style="width:50%"></div></div>
+        <span class="valor" id="valor-extrativista">50</span>
+      </div>
+      <div class="metro">
+        <span class="rotulo">🐟 Ribeirinhos</span>
+        <div class="barra"><div class="preenchimento ribeirinho" id="barra-ribeirinho" style="width:50%"></div></div>
+        <span class="valor" id="valor-ribeirinho">50</span>
+      </div>
+      <div class="metro">
+        <span class="rotulo">🏙️ Urbana</span>
+        <div class="barra"><div class="preenchimento urbano" id="barra-urbano" style="width:50%"></div></div>
+        <span class="valor" id="valor-urbano">50</span>
+      </div>
+      <div class="metro">
+        <span class="rotulo">🗳️ Apoio</span>
+        <div class="barra"><div class="preenchimento apoio" id="barra-apoio" style="width:30%"></div></div>
+        <span class="valor" id="valor-apoio">30</span>
+      </div>
+    </div>
+
+    <div class="hud-aviso" id="hud-aviso" hidden>Pressione <strong>E</strong> para falar</div>
+  </div>
+
+  <div class="painel-acao" id="painel-acao" hidden>
+    <button class="fechar" id="fechar-acao">✕</button>
+    <div class="painel-titulo">
+      <div class="avatar" id="acao-avatar">🌰</div>
+      <div>
+        <div class="avatar-nome" id="acao-nome"></div>
+        <div class="avatar-papel" id="acao-papel"></div>
+      </div>
+    </div>
+    <div class="acoes-lista" id="acoes-lista"></div>
+  </div>
+
+  <div class="painel-log" id="painel-log" hidden>
+    <h3>📜 Acontecimentos</h3>
+    <div class="log" id="log"></div>
+  </div>
+
+  <div class="barra-avancar" id="barra-avancar" hidden>
+    <button class="botao" id="botao-avancar" disabled>Passar o ano →</button>
+  </div>
+
+  <div class="controles-ajuda">
+    <span>WASD / setas: mover</span>
+    <span>E: interagir</span>
+    <span>Mouse: girar câmera</span>
+  </div>
+
+  <div class="tela-fim" id="tela-fim" hidden>
+    <h2 id="fim-titulo"></h2>
+    <p id="fim-mensagem"></p>
+    <button class="botao" id="botao-reiniciar">🌱 Plantar de novo</button>
+  </div>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+  <script src="jogo3d.js"></script>
+</body>
+</html>
