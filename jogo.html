@@ -23,6 +23,40 @@
   </header>
 
   <main class="jogo">
+    <section class="login-cartao" id="login-area">
+      <h2>🌳 Entre para proteger a floresta</h2>
+      <p>Faça login com o Google para jogar, ganhar evolução e ajudar a contar quantas guardiãs e guardiões já entraram na Reserva em Pé.</p>
+      <p class="total-acessos">👣 <strong><span id="total-acessos">0</span></strong> pessoas já entraram nesta reserva</p>
+      <button class="botao botao-google" id="botao-login">Entrar com Google</button>
+      <p class="login-erro" id="login-erro" hidden>Não foi possível entrar. Verifique sua conexão e tente de novo.</p>
+    </section>
+
+    <section class="perfil-cartao" id="perfil-area" hidden>
+      <div class="perfil-titulo">
+        <div class="perfil-avatar">🌱</div>
+        <div>
+          <div class="perfil-nome" id="perfil-nome">Guardiã</div>
+          <div class="perfil-papel">Guardiã da Floresta</div>
+        </div>
+      </div>
+      <div class="perfil-metros">
+        <div class="perfil-metro">
+          <span>⭐ Pontos</span>
+          <strong id="perfil-pontos">0</strong>
+        </div>
+        <div class="perfil-metro">
+          <span>🏅 Nível</span>
+          <strong id="perfil-nivel">1</strong>
+        </div>
+        <div class="perfil-metro">
+          <span>🌲 Espaço verde</span>
+          <strong id="perfil-verde">0%</strong>
+        </div>
+      </div>
+      <div class="barra"><div class="barra-preenchimento floresta" id="barra-espaco-verde" style="width:0%"></div></div>
+      <button class="botao botao-sair" id="botao-sair">Sair</button>
+    </section>
+
     <section class="jogo-intro" id="intro">
       <h1>Reserva em Pé</h1>
       <p>A floresta do Acre está ameaçada. O gado avança com queimadas, e o desmatamento só cresce. Mas você tem uma arma antiga e poderosa: <strong>o empate</strong> — a tática dos extrativistas que, como Chico Mendes ensinou, impede o desmatamento com coragem e união.</p>
@@ -39,7 +73,20 @@
       </div>
     </section>
 
+    <section class="historia" id="caso-real" hidden>
+      <div class="historia-cartao caso-real">
+        <p class="fase-etiqueta">📌 Caso real · Rio Branco, 2025</p>
+        <h2>Quando a prefeitura não limpa, o rio cobra a conta</h2>
+        <p>Na enchente de 2025 em Rio Branco, <strong>a professora Guajarina ficou ilhada e sem energia por dias</strong>: o bairro onde mora é dos mais atingidos porque os igarapés e o Rio Acre não foram limpos a tempo — e o lixo e o assoreamento fizeram a água subir mais rápido e sobre os portos.</p>
+        <p><strong>Os dados:</strong> 30 mil pessoas atingidas na enchente de 2025 · 43 enchentes desde 1971 no Rio Acre · quase 80% dos moradores do bairro Ayrton Senna vivem com menos de meio salário mínimo.</p>
+        <p>Quem mais sofre a falta de manutenção são sempre os que não têm para onde ir. A professora ficou sem luz e sem sair de casa — enquanto a água cobriu a rua que a prefeitura era para ter protegido.</p>
+        <button class="botao" id="botao-caso">Continuar →</button>
+      </div>
+    </section>
+
     <section class="painel" id="painel" hidden>
+      <div class="aviso-item" id="aviso" hidden></div>
+
       <div class="barra-topo">
         <div class="info-ano">Ano <span id="ano">1</span>/12</div>
         <div class="info-fase" id="info-fase">Fase 1 · Resistir</div>
@@ -111,14 +158,47 @@
     <section class="fim" id="fim" hidden>
       <h2 id="fim-titulo"></h2>
       <p id="fim-mensagem"></p>
+      <p class="fim-evolucao" id="fim-evolucao" hidden></p>
       <button class="botao" id="botao-reiniciar">🌱 Plantar de novo</button>
     </section>
+
+    <section class="queimadas" id="queimadas" hidden>
+      <div class="queimadas-cartao">
+        <div class="queimadas-cabecalho">
+          <h2>🔥 Desafio: Queimadas!</h2>
+          <span class="queimadas-tempo">⏱ <span id="queimadas-tempo">12s</span></span>
+          <span class="queimadas-contador" id="queimadas-contador">0/8</span>
+        </div>
+        <p class="queimadas-texto">Apague os focos de incêndio clicando neles antes que o fogo se espalhe pela floresta!</p>
+        <div class="queimadas-area" id="queimadas-area"></div>
+      </div>
+    </section>
+    <p class="queimadas-resultado" id="queimadas-resultado" hidden></p>
+
+    <button class="chat-botao" id="chat-botao" hidden aria-label="Abrir chat da comunidade">💬</button>
+
+    <aside class="chat-painel" id="chat-painel" hidden>
+      <div class="chat-cabecalho">
+        <h3>💬 Comunidade da Floresta</h3>
+        <button class="chat-fechar" id="chat-fechar">✕</button>
+      </div>
+      <div class="chat-msgs" id="chat-msgs"></div>
+      <div class="chat-entrada">
+        <input type="text" id="chat-input" placeholder="Escreva sua mensagem..." maxlength="200">
+        <button id="chat-enviar">➤</button>
+      </div>
+    </aside>
   </main>
 
   <footer class="rodape">
     <p>Inspirado na luta real dos povos do Acre: empates, Chico Mendes e as reservas extrativistas.</p>
   </footer>
 
+  <script src="https://www.gstatic.com/firebasejs/10.10.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.10.0/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.10.0/firebase-firestore-compat.js"></script>
+  <script src="firebase-config.js"></script>
+  <script src="login-jogo.js"></script>
   <script src="jogo.js"></script>
 </body>
 </html>

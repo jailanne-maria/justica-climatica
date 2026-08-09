@@ -300,8 +300,92 @@ body {
   font-size: 1.05rem;
 }
 
-/* Rodapé */
-.rodape {
+/* Página Sobre — atos */
+.atos {
+  counter-reset: ato;
+}
+
+.ato {
+  position: relative;
+  padding: 3.5rem 1.5rem;
+}
+
+.ato-numero {
+  counter-increment: ato;
+}
+
+.ato-rotulo {
+  display: inline-block;
+  background: #2f7a3d;
+  color: #eaffdf;
+  font-size: 0.85rem;
+  font-weight: 700;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  padding: 0.35rem 1rem;
+  border-radius: 999px;
+  margin-bottom: 1.2rem;
+}
+
+.ato-rotulo::before {
+  content: "Ato " counter(ato);
+}
+
+.ficha {
+  display: flex;
+  gap: 1rem;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 2rem;
+  flex-wrap: wrap;
+}
+
+.foto-perfil {
+  width: 96px;
+  height: 96px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #2f7a3d, #58c07a);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 3rem;
+  box-shadow: 0 6px 20px rgba(47, 122, 61, 0.4);
+}
+
+.ficha-info h1 {
+  font-size: 2rem;
+  color: #f2fff0;
+}
+
+.ficha-info .funcao {
+  color: #d8f5c4;
+  font-weight: 600;
+}
+
+.contato-lista {
+  list-style: none;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+}
+
+.contato-lista a {
+  color: #1d5c2b;
+  font-weight: 600;
+  text-decoration: none;
+  border: 1px solid #d8e8cc;
+  padding: 0.7rem 1rem;
+  border-radius: 10px;
+  display: inline-block;
+  background: #ffffff;
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.contato-lista a:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+}
   background: #0f2413;
   color: #a9d19b;
   text-align: center;

@@ -151,13 +151,28 @@ const historias = {
 const historiasEleicao = {
   vitoria: {
     titulo: '🗳️ A floresta venceu as eleições',
-    texto: 'Os candidatos que defendem a floresta venceram. Novas políticas de proteção foram aprovadas e o agro sustentável recebeu apoio. A voz das comunidades foi ouvida.'
+    texto: 'Os candidatos que defendem a floresta venceram. Novas políticas de proteção foram aprovadas e o agro sustentável ganhou apoio. O pragmatismo das comunidades foi ouvido.'
   },
   derrota: {
     titulo: '🗳️ O desmatamento ganhou as urnas',
     texto: 'Candidatos ligados ao agro avançaram. Queimadas e desmatamento ganharam força. Mas a luta continua — a floresta ainda depende de você.'
   }
 };
+
+const avisos = [
+  { tipo: 'frase', texto: '🌳 Mantenha a floresta em pé: é o bem de todos. Uma árvore a menos, um futuro a menos.' },
+  { tipo: 'frase', texto: '🌎 A floresta em pé refrigeri o planeta. Cada ação sua aqui ajuda o mundo inteiro.' },
+  { tipo: 'frase', texto: '🛡️ Empate não é derrota: é coragem. Foi assim que Chico Mendes segurou o desmate.' },
+  { tipo: 'frase', texto: '💧 Floresta gera chuva. Quem derruba a mata, seca o próprio rio.' },
+  { tipo: 'familia', texto: 'Cuidadora Maria das Graças, 52: "Quando o rio subiu, minha família passou três dias sem luz. A gente perdeu tudo, mas não o chão de luta."' },
+  { tipo: 'familia', texto: 'Seu Raimundo, pescador: "O igarapé entupido de lixo levou a cheia pra porta de casa. Quem devia limpar, não veio."' },
+  { tipo: 'familia', texto: 'Dona Selma, costureira e chefe de família: "Depois da enchente, as aulas pararam. A professora da esquina ficou ilhada."' },
+  { tipo: 'familia', texto: 'João, 15: "No Acre, a gente aprende cedo: quem vive da floresta, vive em paz com ela."' },
+  { tipo: 'reportagem', texto: 'Em 2024, a Amazônia teve 132 mil focos de incêndio — o maior número em mais de uma década. (INPE)' },
+  { tipo: 'reportagem', texto: 'Cada árvore madura absorve cerca de 22 kg de CO₂ por ano. Uma floresta é uma usina limpa. (Fonte: IPCC)' },
+  { tipo: 'reportagem', texto: '59% da Amazônia sofreu seca severa em 2024. O rio que sempre deu a vida começou a secar. (OMM/ONU)' },
+  { tipo: 'reportagem', texto: 'Enchentes aumentaram nos últimos anos: Rio Branco teve 43 desde 1971. A cada cheia, novos ilhados. (MIDR/Atlas de Desastres)' }
+];
 
 const estado = {
   ano: 1,
@@ -307,6 +322,9 @@ function rodarAno() {
     fazerEleicao();
   }
 
+  adicionarLog('Queimadas à vista!', 'ruim', 'Focos de incêndio ameaçam a reserva. Proteja a floresta!');
+  iniciarDesafioQueimadas();
+
   estado.ano += 1;
   estado.escolhas = {};
 
@@ -323,7 +341,25 @@ function rodarAno() {
   }
 
   atualizarPainel();
+  mostrarAviso();
   verificarDerrota();
+}
+
+let ultimoAviso = -1;
+
+function mostrarAviso() {
+  const el = document.getElementById('aviso');
+  let indice = Math.floor(Math.random() * avisos.length);
+  if (indice === ultimoAviso && avisos.length > 1) {
+    indice = (indice + 1) % avisos.length;
+  }
+  ultimoAviso = indice;
+  const aviso = avisos[indice];
+  el.textContent = aviso.texto;
+  el.className = `aviso-item aviso-${aviso.tipo}`;
+  el.hidden = false;
+  clearTimeout(window.__avisoTimer);
+  window.__avisoTimer = setTimeout(() => { el.hidden = true; }, 5000);
 }
 
 function verificarDerrota() {
@@ -353,6 +389,7 @@ function finalizar(venceu) {
     : `A floresta chegou a ${estado.floresta}% e o bem-estar médio foi ${Math.round(mediaComunidades)}. O gado e as queimadas venceram desta vez — mas a luta pela justiça climática continua.`;
 
   if (vitoria) lancarConfete();
+  if (typeof registrarEvolucao === 'function') registrarEvolucao(vitoria, estado);
 }
 
 function adicionarLog(titulo, tipo, mensagem) {
@@ -514,13 +551,31 @@ function mostrarHistoria(fase) {
 }
 
 function comecar() {
+  if (!jogadorAtual) {
+    document.getElementById('login-area').hidden = false;
+    return;
+  }
   document.getElementById('intro').hidden = true;
   montarPersonagens();
   mostrarHistoria(1);
 }
 
+let casoRealMostrado = false;
+
 function continuarDaHistoria() {
   document.getElementById('historia').hidden = true;
+  if (estado.fase === 2 && !casoRealMostrado) {
+    casoRealMostrado = true;
+    document.getElementById('caso-real').hidden = false;
+    return;
+  }
+  document.getElementById('painel').hidden = false;
+  atualizarPainel();
+  verificarDerrota();
+}
+
+function continuarDoCasoReal() {
+  document.getElementById('caso-real').hidden = true;
   document.getElementById('painel').hidden = false;
   atualizarPainel();
   verificarDerrota();
@@ -528,6 +583,7 @@ function continuarDaHistoria() {
 
 document.getElementById('botao-comecar').addEventListener('click', comecar);
 document.getElementById('botao-historia').addEventListener('click', continuarDaHistoria);
+document.getElementById('botao-caso').addEventListener('click', continuarDoCasoReal);
 document.getElementById('botao-avancar').addEventListener('click', rodarAno);
 document.getElementById('botao-reiniciar').addEventListener('click', () => {
   Object.assign(estado, {
@@ -537,5 +593,6 @@ document.getElementById('botao-reiniciar').addEventListener('click', () => {
   });
   document.getElementById('fim').hidden = true;
   document.getElementById('log').innerHTML = '';
+  casoRealMostrado = false;
   comecar();
 });

@@ -8,11 +8,152 @@ let gados = [];
 let personagens3d = [];
 let alvoCamera = null;
 let interacaoAtual = null;
+let borboletas = [];
+let passaros = [];
 
 const teclas = {};
 const raioInteracao = 4.5;
 
 const LIMITE_MUNDO = 58;
+
+const ZONAS_PERSONAGENS = [[-18, -14], [16, -16], [-4, 16], [20, 12]];
+const RIO_Z = -50;
+const RIO_MEIA_LARGURA = 7;
+
+const arbVerde = [0x2f9e44, 0x3d7a3d, 0x4a8f4a, 0x2a7a2f, 0x7a9a3d];
+const floresCores = [0xe74c3c, 0xf1c40f, 0xe67e22, 0x9b59b6, 0xffffff, 0x3498db];
+
+/* ===== Modo VR (Cardboard) ===== */
+let modoVR = false;
+let estereo = null;
+let orientacaoAtual = { yaw: 0, pitch: 0, yawAlvo: 0, pitchAlvo: 0 };
+let joystick = { x: 0, y: 0, cx: 0, cy: 0, r: 52, ativo: false };
+
+function aplicativoPronto() { return typeof firebase !== 'undefined'; }
+
+function detectarDispositivoVR() {
+  return typeof DeviceOrientationEvent !== 'undefined';
+}
+
+function verificarPermissaoGiroscopio() {
+  return pedirPermissaoGiroscopio();
+}
+
+function pedirPermissaoGiroscopio() {
+  return new Promise((resolver) => {
+    if (typeof DeviceOrientationEvent === 'undefined' || !DeviceOrientationEvent.requestPermission) {
+      resolver(true);
+      return;
+    }
+    DeviceOrientationEvent.requestPermission()
+      .then((estado) => resolver(estado === 'granted'))
+      .catch(() => resolver(false));
+  });
+}
+
+function ligarModoVR() {
+  if (!renderizador) return;
+  const botao = document.getElementById('botao-vr');
+  botao.classList.add('ativo');
+  botao.textContent = '✕ Sair do VR';
+
+  modoVR = true;
+  document.body.classList.add('estado-vr');
+
+  if (!estereo) {
+    estereo = new THREE.StereoCamera();
+  }
+
+  const joystickEl = document.getElementById('joystick');
+  joystickEl.hidden = false;
+
+  verificarPermissaoGiroscopio().then((ok) => {
+    if (!ok) orientacaoAtual.yawAlvo = 0;
+  });
+
+  window.addEventListener('deviceorientation', aoGirarMobile);
+
+  camera.updateProjectionMatrix();
+  atualizarHud();
+}
+
+function aoGirarMobile(e) {
+  if (!e.alpha) return;
+  const beta = (e.beta || 0) * Math.PI / 180;
+  const al = (e.gamma || 0) * Math.PI / 180;
+  const yaw = (e.alpha || 0) * Math.PI / 180;
+  orientacaoAtual.yawAlvo = yaw;
+  orientacaoAtual.pitchAlvo = beta;
+}
+
+function desligarModoVR() {
+  modoVR = false;
+  const botao = document.getElementById('botao-vr');
+  botao.classList.remove('ativo');
+  botao.textContent = '🕶️ Modo VR';
+  document.getElementById('joystick').hidden = true;
+  document.getElementById('barra-avancar').hidden = false;
+  document.body.classList.remove('estado-vr');
+}
+
+function ligarJoystick(el) {
+  const raio = el.querySelector('.joystick-raio');
+  const knob = el.querySelector('.joystick-knob');
+  const lim = 44;
+
+  function ao(arr) {
+    const r = raio.getBoundingClientRect();
+    joystick.ativo = true;
+    joystick.cx = r.left + r.width / 2;
+    joystick.cy = r.top + r.height / 2;
+    mover(arr);
+  }
+  function mover(d) {
+    const dx = d.touches ? d.touches[0].clientX - joystick.cx : d.clientX - joystick.cx;
+    const dy = d.touches ? d.touches[0].clientY - joystick.cy : d.clientY - joystick.cy;
+    const ang = Math.atan2(dy, dx);
+    const mag = Math.hypot(dx, dy);
+    const clamp = Math.min(mag, lim);
+    joystick.x = Math.cos(ang) * clamp / lim;
+    joystick.y = Math.sin(ang) * clamp / lim;
+    knob.style.transform = `translate(${joystick.x * lim}px, ${joystick.y * lim}px)`;
+  }
+  function parar() {
+    joystick.ativo = false;
+    joystick.x = 0;
+    joystick.y = 0;
+    knob.style.transform = 'translate(0px, 0px)';
+  }
+
+  if (window.PointerEvent) {
+    raio.addEventListener('pointerdown', ao);
+    raio.addEventListener('pointermove', (e) => { if (joystick.ativo) mover(e); });
+    raio.addEventListener('pointerup', parar);
+    raio.addEventListener('pointercancel', parar);
+  } else {
+    raio.addEventListener('touchstart', ao);
+    raio.addEventListener('touchmove', mover);
+    raio.addEventListener('touchend', parar);
+  }
+}
+
+function moverJogadorVR() {
+  const vel = 0.35;
+  const o = orientacaoAtual;
+  const yaw = o.yaw;
+  const dxJ = joystick.y;
+  const dyJ = -joystick.x;
+
+  const sen = Math.sin(yaw);
+  const cos = Math.cos(yaw);
+  const dx = (sen * dxJ + cos * dyJ);
+  const dz = (cos * dxJ - sen * dyJ);
+  if (Math.hypot(dx, dz) > 0.01) {
+    jogador.position.x = Math.max(-LIMITE_MUNDO, Math.min(LIMITE_MUNDO, jogador.position.x + dx * vel * 1.2));
+    jogador.position.z = Math.max(-LIMITE_MUNDO, Math.min(LIMITE_MUNDO, jogador.position.z + dz * vel * 1.2));
+    jogador.rotation.y = yaw;
+  }
+}
 
 /* ===== Estado e lógica do jogo (reaproveitada) ===== */
 
@@ -237,6 +378,8 @@ function iniciar3D() {
   criarGado();
   criarJogador();
   criarPersonagens();
+  criarBorboletas();
+  criarPassaros();
 
   window.addEventListener('resize', () => {
     camera.aspect = window.innerWidth / window.innerHeight;
@@ -248,19 +391,63 @@ function iniciar3D() {
 }
 
 function criarChao() {
+  const textura = criarTexturaDeGrama();
   const geometria = new THREE.PlaneGeometry(200, 200);
-  const material = new THREE.MeshLambertMaterial({ color: 0x4a8f4a });
+  const material = new THREE.MeshLambertMaterial({ map: textura });
   const chao = new THREE.Mesh(geometria, material);
   chao.rotation.x = -Math.PI / 2;
   chao.receiveShadow = true;
   cena.add(chao);
 
-  const geometria2 = new THREE.PlaneGeometry(200, 200);
-  const material2 = new THREE.MeshLambertMaterial({ color: 0x3d7a3d });
-  const chao2 = new THREE.Mesh(geometria2, material2);
-  chao2.rotation.x = -Math.PI / 2;
-  chao2.position.y = -0.02;
-  cena.add(chao2);
+  criarCapoeira();
+}
+
+function criarTexturaDeGrama() {
+  const canvas = document.createElement('canvas');
+  canvas.width = 256;
+  canvas.height = 256;
+  const ctx = canvas.getContext('2d');
+  ctx.fillStyle = '#4a8f4a';
+  ctx.fillRect(0, 0, 256, 256);
+
+  for (let i = 0; i < 2200; i++) {
+    const tom = Math.random();
+    ctx.fillStyle = tom > 0.75 ? '#3d7a3d' : tom > 0.45 ? '#58a858' : '#4a8f4a';
+    ctx.fillRect(Math.random() * 256, Math.random() * 256, 2, 2);
+  }
+  const textura = new THREE.CanvasTexture(canvas);
+  textura.wrapS = THREE.RepeatWrapping;
+  textura.wrapT = THREE.RepeatWrapping;
+  textura.repeat.set(12, 12);
+  return textura;
+}
+
+function criarCapoeira() {
+  for (let i = 0; i < 90; i++) {
+    const x = (Math.random() * 2 - 1) * (LIMITE_MUNDO - 4);
+    const z = (Math.random() * 2 - 1) * (LIMITE_MUNDO - 4);
+    if (Math.abs(z - RIO_Z) < RIO_MEIA_LARGURA) continue;
+
+    const cor = arbVerde[(Math.random() * arbVerde.length) | 0];
+    const arbusto = new THREE.Mesh(new THREE.SphereGeometry(0.4, 6, 5), new THREE.MeshLambertMaterial({ color: cor }));
+    const escala = 0.5 + Math.random() * 0.9;
+    arbusto.scale.set(escala * (0.8 + Math.random() * 0.6), escala * 0.55, escala * (0.8 + Math.random() * 0.6));
+    arbusto.position.set(x, 0.15, z);
+    arbusto.rotation.y = Math.random() * Math.PI;
+    arbusto.castShadow = true;
+    cena.add(arbusto);
+  }
+
+  for (let i = 0; i < 180; i++) {
+    const x = (Math.random() * 2 - 1) * (LIMITE_MUNDO - 3);
+    const z = (Math.random() * 2 - 1) * (LIMITE_MUNDO - 3);
+    if (Math.abs(z - RIO_Z) < RIO_MEIA_LARGURA + 2) continue;
+
+    const cor = floresCores[(Math.random() * floresCores.length) | 0];
+    const flor = new THREE.Mesh(new THREE.SphereGeometry(0.09, 6, 5), new THREE.MeshLambertMaterial({ color: cor }));
+    flor.position.set(x, 0.12 + Math.random() * 0.2, z);
+    cena.add(flor);
+  }
 }
 
 function criarRio() {
@@ -299,19 +486,160 @@ function criarArvore(x, z) {
   return grupo;
 }
 
+function criarCastanheira(x, z) {
+  const grupo = new THREE.Group();
+
+  const troncoMat = new THREE.MeshLambertMaterial({ color: 0x5b3a1e });
+  const tronco = new THREE.Mesh(new THREE.CylinderGeometry(1.4, 2.2, 7, 8), troncoMat);
+  tronco.position.y = 3.5;
+  tronco.castShadow = true;
+  grupo.add(tronco);
+
+  const folhaMat = new THREE.MeshLambertMaterial({ color: 0x257a36 });
+  for (let i = 0; i < 5; i++) {
+    const copa = new THREE.Mesh(new THREE.SphereGeometry(3.6 + Math.random() * 1.2, 7, 6), folhaMat);
+    copa.position.set((Math.random() * 2 - 1) * 1.6, 8 + Math.random() * 1.4, (Math.random() * 2 - 1) * 1.6);
+    copa.scale.y = 0.75;
+    copa.castShadow = true;
+    grupo.add(copa);
+  }
+
+  const frutoMat = new THREE.MeshLambertMaterial({ color: 0x8a5a2b });
+  for (let i = 0; i < 4; i++) {
+    const fruto = new THREE.Mesh(new THREE.SphereGeometry(0.5, 6, 5), frutoMat);
+    fruto.position.set((Math.random() * 2 - 1) * 2.2, 4.6 + Math.random() * 0.8, (Math.random() * 2 - 1) * 2.2);
+    grupo.add(fruto);
+  }
+
+  grupo.position.set(x, 0, z);
+  grupo.userData.crescendo = 0.2;
+  grupo.userData.alvo = 1;
+  grupo.userData.especie = 'castanheira';
+  cena.add(grupo);
+  return grupo;
+}
+
+function criarSeringueira(x, z) {
+  const grupo = new THREE.Group();
+
+  const troncoMat = new THREE.MeshLambertMaterial({ color: 0x7a5a3a });
+  const tronco = new THREE.Mesh(new THREE.CylinderGeometry(0.55, 0.9, 5, 8), troncoMat);
+  tronco.position.y = 2.5;
+  tronco.castShadow = true;
+  grupo.add(tronco);
+
+  const folhaMat = new THREE.MeshLambertMaterial({ color: 0x3d9e44 });
+  for (let i = 0; i < 3; i++) {
+    const copa = new THREE.Mesh(new THREE.SphereGeometry(1.9, 7, 6), folhaMat);
+    copa.position.set((Math.random() * 2 - 1) * 1.2, 6 + Math.random() * 1.1, (Math.random() * 2 - 1) * 1.2);
+    copa.castShadow = true;
+    grupo.add(copa);
+  }
+
+  grupo.position.set(x, 0, z);
+  grupo.userData.especie = 'seringueira';
+  grupo.userData.alvo = 1;
+  grupo.userData.crescendo = 1;
+  cena.add(grupo);
+  return grupo;
+}
+
+function criarPalmeira(x, z) {
+  const grupo = new THREE.Group();
+
+  const troncoMat = new THREE.MeshLambertMaterial({ color: 0x8a6a45 });
+  const tronco = new THREE.Mesh(new THREE.CylinderGeometry(0.3, 0.5, 7, 8), troncoMat);
+  tronco.position.y = 3.5;
+  tronco.castShadow = true;
+  grupo.add(tronco);
+
+  const folhaMat = new THREE.MeshLambertMaterial({ color: 0x2a9e33, side: THREE.DoubleSide });
+  for (let i = 0; i < 7; i++) {
+    const ang = (i / 7) * Math.PI * 2;
+    const folha = new THREE.Mesh(new THREE.PlaneGeometry(0.18, 3.4), folhaMat);
+    folha.position.set(0, 7.2, 0);
+    folha.rotation.set(1.1, 0, ang);
+    folha.castShadow = true;
+    grupo.add(folha);
+  }
+
+  grupo.position.set(x, 0, z);
+  grupo.userData.especie = 'palmeira';
+  grupo.userData.alvo = 1;
+  grupo.userData.crescendo = 1;
+  cena.add(grupo);
+  return grupo;
+}
+
+function criarArvorePequena(x, z) {
+  const grupo = new THREE.Group();
+  const troncoMat = new THREE.MeshLambertMaterial({ color: 0x6b4a2b });
+  const tronco = new THREE.Mesh(new THREE.CylinderGeometry(0.4, 0.6, 2.5, 6), troncoMat);
+  tronco.position.y = 1.2;
+  tronco.castShadow = true;
+  grupo.add(tronco);
+
+  const folhaMat = new THREE.MeshLambertMaterial({ color: 0x2a8f3a });
+  const copa = new THREE.Mesh(new THREE.SphereGeometry(1.7, 7, 6), folhaMat);
+  copa.position.y = 3.6;
+  copa.scale.y = 0.8;
+  copa.castShadow = true;
+  grupo.add(copa);
+
+  grupo.position.set(x, 0, z);
+  grupo.userData.especie = 'pequena';
+  grupo.userData.alvo = 1;
+  grupo.userData.crescendo = 1;
+  cena.add(grupo);
+  return grupo;
+}
+
 function criarArvores() {
-  const posicoes = [
-    [-40, -30], [-32, -36], [-24, -26], [-36, -16], [-44, -8], [-28, -6],
-    [-20, -38], [-12, -32], [-16, -24], [-6, -34], [-2, -40], [4, -28],
-    [12, -38], [22, -32], [30, -38], [38, -30], [34, -20], [42, -12],
-    [-48, 4], [-40, 12], [-32, 22], [-24, 34], [-14, 40], [-4, 34],
-    [6, 42], [16, 36], [26, 42], [36, 34], [44, 26], [40, 14],
-    [-44, 28], [46, -2], [-26, 10], [28, 6], [-10, -10], [8, 12],
-    [-38, -40], [-2, -16], [18, -20], [14, 4], [-20, 20], [22, 24]
-  ];
-  posicoes.forEach(([x, z]) => {
-    arvores.push(criarArvore(x, z));
-  });
+  const quantidade = 160;
+  let tentativas = 0;
+  while (arvores.length < quantidade && tentativas < 4000) {
+    tentativas++;
+    const x = (Math.random() * 2 - 1) * (LIMITE_MUNDO - 6);
+    const z = (Math.random() * 2 - 1) * (LIMITE_MUNDO - 6);
+    if (Math.abs(z - RIO_Z) < RIO_MEIA_LARGURA + 2) continue;
+    if (Math.sqrt(x * x + z * z) < 6) continue;
+    const pertoPersonagem = ZONAS_PERSONAGENS.some(([px, pz]) => Math.sqrt((x - px) * (x - px) + (z - pz) * (z - pz)) < 8);
+    if (pertoPersonagem) continue;
+    const colide = arvores.some((a) => Math.sqrt((x - a.position.x) * (x - a.position.x) + (z - a.position.z) * (z - a.position.z)) < 3);
+    if (colide) continue;
+
+    const sorte = Math.random();
+    const proximoRio = Math.abs(z - RIO_Z) < RIO_MEIA_LARGURA + 10;
+    let arvore;
+    if (sorte < 0.2) arvore = criarCastanheira(x, z);
+    else if (sorte < 0.45) arvore = criarSeringueira(x, z);
+    else if (proximoRio && sorte < 0.72) arvore = criarPalmeira(x, z);
+    else if (sorte < 0.85) arvore = criarArvorePequena(x, z);
+    else arvore = criarArbustoGrande(x, z);
+
+    const escala = 0.8 + Math.random() * 0.9;
+    arvore.scale.setScalar(escala);
+    arvore.userData.baseEscala = escala;
+    arvore.rotation.y = Math.random() * Math.PI * 2;
+    arvores.push(arvore);
+  }
+}
+
+function criarArbustoGrande(x, z) {
+  const grupo = new THREE.Group();
+  const folhaMat = new THREE.MeshLambertMaterial({ color: 0x2a8f3a });
+  for (let i = 0; i < 3; i++) {
+    const ramo = new THREE.Mesh(new THREE.SphereGeometry(1.2, 7, 6), folhaMat);
+    ramo.position.set((Math.random() * 2 - 1) * 0.9, 1 + Math.random() * 0.8, (Math.random() * 2 - 1) * 0.9);
+    ramo.castShadow = true;
+    grupo.add(ramo);
+  }
+  grupo.position.set(x, 0, z);
+  grupo.userData.especie = 'matagal';
+  grupo.userData.alvo = 1;
+  grupo.userData.crescendo = 1;
+  cena.add(grupo);
+  return grupo;
 }
 
 function criarBoi(x, z) {
@@ -418,6 +746,74 @@ function fazerTexto(texto) {
   ctx.fillText(texto, 64, 64);
   const textura = new THREE.CanvasTexture(canvas);
   return textura;
+}
+
+function criarBorboletas() {
+  const cores = [0xf1c40f, 0xe74c3c, 0x3498db, 0x9b59b6, 0xff8c00];
+  for (let i = 0; i < 8; i++) {
+    const grupo = new THREE.Group();
+    const cor = cores[i % cores.length];
+    const mat = new THREE.MeshLambertMaterial({ color: cor, side: THREE.DoubleSide });
+    const asaE = new THREE.Mesh(new THREE.PlaneGeometry(0.5, 0.3), mat);
+    asaE.position.x = 0.28;
+    grupo.add(asaE);
+    const asaD = new THREE.Mesh(new THREE.PlaneGeometry(0.5, 0.3), mat);
+    asaD.position.x = -0.28;
+    grupo.add(asaD);
+
+    const x = (Math.random() * 2 - 1) * (LIMITE_MUNDO - 15);
+    const z = (Math.random() * 2 - 1) * (LIMITE_MUNDO - 15);
+    if (Math.abs(z - RIO_Z) < RIO_MEIA_LARGURA + 3) continue;
+    grupo.position.set(x, 2 + Math.random() * 2.5, z);
+
+    borboletas.push({
+      grupo,
+      baseX: x,
+      baseZ: z,
+      baseY: 2 + Math.random() * 2.5,
+      fase: Math.random() * Math.PI * 2,
+      raio: 1.5 + Math.random() * 2.5,
+      velocidade: 0.4 + Math.random() * 0.5,
+      ativo: true
+    });
+    cena.add(grupo);
+  }
+}
+
+function criarPassaros() {
+  const mat = new THREE.MeshLambertMaterial({ color: 0x1d3320 });
+  for (let i = 0; i < 9; i++) {
+    const grupo = new THREE.Group();
+    const asaE = new THREE.Mesh(new THREE.PlaneGeometry(0.8, 0.25), mat);
+    asaE.position.x = -0.4;
+    asaE.rotation.z = -0.3;
+    grupo.add(asaE);
+    const asaD = new THREE.Mesh(new THREE.PlaneGeometry(0.8, 0.25), mat);
+    asaD.position.x = 0.4;
+    asaD.rotation.z = -0.3;
+    grupo.add(asaD);
+
+    const raioOrbita = 18 + Math.random() * 18;
+    grupo.position.set(
+      (Math.random() * 2 - 1) * (LIMITE_MUNDO - 8),
+      22 + Math.random() * 6,
+      (Math.random() * 2 - 1) * (LIMITE_MUNDO - 8)
+    );
+
+    passaros.push({
+      grupo,
+      fase: Math.random() * Math.PI * 2,
+      raio: raioOrbita,
+      velocidade: 0.3 + Math.random() * 0.4,
+      sx: (Math.random() * 2 - 1) * (LIMITE_MUNDO - 8),
+      sz: (Math.random() * 2 - 1) * (LIMITE_MUNDO - 8),
+      x: 0,
+      y: 0,
+      z: 0,
+      altura: 22 + Math.random() * 6
+    });
+    cena.add(grupo);
+  }
 }
 
 /* ===== Sincronização visual ===== */
@@ -631,10 +1027,43 @@ function moverJogador() {
 
 /* ===== Loop de animação ===== */
 
+function animarBorboletas(tempo) {
+  borboletas.forEach((b) => {
+    const t = tempo * b.velocidade + b.fase;
+    b.grupo.position.x = b.ativo ? b.baseX + Math.sin(t) * b.raio : b.baseX;
+    b.grupo.position.z = b.ativo ? b.baseZ + Math.cos(t * 0.7) * b.raio : b.baseZ;
+    b.grupo.position.y = b.baseY + Math.sin(t * 1.3) * 0.5;
+    b.grupo.rotation.y = Math.sin(t * 0.9) * 1.6;
+    b.grupo.children.forEach((asa) => {
+      const flap = Math.sin(tempo * 14);
+      asa.position.y = Math.abs(flap) * 0.3;
+      asa.rotation.z = flap * 0.4;
+    });
+  });
+}
+
+function animarPassaros(tempo) {
+  passaros.forEach((p) => {
+    const t = tempo * p.velocidade + p.fase;
+    const raio = p.raio;
+    p.grupo.x = p.sx + Math.cos(t) * raio;
+    p.grupo.z = p.sz + Math.sin(t) * raio;
+    p.grupo.y = p.altura + Math.sin(t * 2) * 2;
+    p.grupo.rotation.y = -Math.sin(t) * 0.2 + Math.PI / 2;
+    p.grupo.children.forEach((asa) => {
+      asa.rotation.z = -0.3 + Math.sin(tempo * 9) * 0.55;
+    });
+  });
+}
+
 function animar() {
   requestAnimationFrame(animar);
 
-  moverJogador();
+  if (modoVR) {
+    moverJogadorVR();
+  } else {
+    moverJogador();
+  }
 
   const tempo = Date.now() * 0.002;
 
@@ -643,8 +1072,12 @@ function animar() {
     const atual = arvore.userData.crescendo;
     const novo = atual + (alvo - atual) * 0.05;
     arvore.userData.crescendo = novo;
-    arvore.scale.setScalar(novo);
+    const base = arvore.userData.baseEscala || 1;
+    arvore.scale.setScalar(novo * base);
   });
+
+  animarBorboletas(tempo);
+  animarPassaros(tempo);
 
   avancarGadoPasso();
 
@@ -654,14 +1087,64 @@ function animar() {
 
   jogador.position.y = Math.abs(Math.sin(tempo * 3)) * 0.15;
 
-  // Câmera segue o jogador
-  const cx = jogador.position.x + Math.sin(tempo * 0.1) * 0;
-  camera.position.x += (cx - camera.position.x) * 0.08;
-  camera.position.z = jogador.position.z + 24;
-  camera.position.y = 22;
-  camera.lookAt(jogador.position.x, 1, jogador.position.z - 5);
+  if (modoVR) {
+    orientacaoAtual.yaw += (orientacaoAtual.yawAlvo - orientacaoAtual.yaw) * 0.2;
+    orientacaoAtual.pitch += (orientacaoAtual.pitchAlvo - orientacaoAtual.pitch) * 0.2;
+    posicionarCameraVR();
+    if (estereo) {
+      estereo.update(camera);
+      renderizarEstereo();
+    } else {
+      renderizador.render(cena, camera);
+    }
+  } else {
+    // Câmera segue o jogador
+    const cx = jogador.position.x + Math.sin(tempo * 0.1) * 0;
+    camera.position.x += (cx - camera.position.x) * 0.08;
+    camera.position.z = jogador.position.z + 24;
+    camera.position.y = 22;
+    camera.lookAt(jogador.position.x, 1, jogador.position.z - 5);
+    if (camera.near !== 0.1) {
+      camera.near = 0.1;
+      camera.far = 500;
+      camera.updateProjectionMatrix();
+    }
+    renderizador.render(cena, camera);
+  }
+}
 
-  renderizador.render(cena, camera);
+function posicionarCameraVR() {
+  const o = orientacaoAtual;
+  const olhoY = 1.8;
+  const altura = 1.8;
+
+  camera.position.set(jogador.position.x, jogador.position.y + olhoY, jogador.position.z);
+
+  const dirX = Math.sin(o.yaw) * Math.cos(o.pitch);
+  const dirY = Math.sin(o.pitch);
+  const dirZ = Math.cos(o.yaw) * Math.cos(o.pitch);
+
+  camera.up.set(0, 1, 0);
+  camera.lookAt(camera.position.x + dirX, Math.max(0.1, camera.position.y + dirY), camera.position.z + dirZ);
+
+  jogador.rotation.y = o.yaw;
+}
+
+function renderizarEstereo() {
+  const w = renderizador.domElement.clientWidth || window.innerWidth;
+  const h = renderizador.domElement.clientHeight || window.innerHeight;
+
+  renderizador.setScissorTest(true);
+
+  renderizador.setScissor(0, 0, w / 2, h);
+  renderizador.setViewport(0, 0, w / 2, h);
+  renderizador.render(cena, estereo.cameraL);
+
+  renderizador.setScissor(w / 2, 0, w / 2, h);
+  renderizador.setViewport(w / 2, 0, w / 2, h);
+  renderizador.render(cena, estereo.cameraR);
+
+  renderizador.setScissorTest(false);
 }
 
 /* ===== Eventos de entrada ===== */
@@ -714,4 +1197,29 @@ document.getElementById('botao-reiniciar').addEventListener('click', () => {
   document.getElementById('log').innerHTML = '';
   document.querySelectorAll('.confete').forEach((c) => c.remove());
   mostrarHistoria(1);
+});
+
+/* ===== Controles VR ===== */
+
+document.getElementById('botao-vr').addEventListener('click', async () => {
+  if (modoVR) {
+    desligarModoVR();
+  } else {
+    if (!renderizador || typeof THREE.StereoCamera === 'undefined') {
+      alert('Modo VR requer WebGL. Abra em um navegador com suporte.');
+      return;
+    }
+    const ok = await verificarPermissaoGiroscopio();
+    if (!ok) {
+      alert('Sem acesso ao giroscópio. A permissão foi negada.');
+      return;
+    }
+    orientacaoAtual.yawAlvo = Math.PI;
+    orientacaoAtual.pitchAlvo = 0;
+    ligarModoVR();
+  }
+});
+
+document.addEventListener('DOMContentLoaded', () => {
+  ligarJoystick(document.getElementById('joystick'));
 });
