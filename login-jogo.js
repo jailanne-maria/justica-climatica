@@ -38,6 +38,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
   ligarChat();
 
+  restaurarSessao();
+
   botaoLogin.addEventListener('click', async () => {
     botaoLogin.disabled = true;
     botaoLogin.textContent = 'Abrindo Google...';
@@ -81,6 +83,38 @@ document.addEventListener('DOMContentLoaded', () => {
   areaLogin.hidden = false;
   areaPerfil.hidden = true;
 });
+
+function restaurarSessao() {
+  if (!aplicativoPronto()) return;
+  quandoUsuarioMudar(async (usuario) => {
+    if (!usuario) {
+      pararChat();
+      jogadorAtual = null;
+      progressoPerfil = null;
+      const areaLogin = document.getElementById('login-area');
+      const areaPerfil = document.getElementById('perfil-area');
+      if (areaLogin) areaLogin.hidden = false;
+      if (areaPerfil) areaPerfil.hidden = true;
+      atualizarBotaoChat();
+      return;
+    }
+
+    const dadosBanco = await carregarJogador(usuario.uid);
+    progressoPerfil = Object.assign(
+      { pontos: 0, partidas: 0, vitorias: 0, nivel: 1, espacoVerde: 0 },
+      dadosBanco || {}
+    );
+    progressoPerfil.nome = usuario.displayName || 'Guardiã';
+
+    jogadorAtual = {
+      uid: usuario.uid,
+      nome: progressoPerfil.nome,
+      email: usuario.email || ''
+    };
+
+    mostrarPerfil();
+  });
+}
 
 function mostrarPerfil() {
   const areaLogin = document.getElementById('login-area');

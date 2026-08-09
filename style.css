@@ -267,23 +267,35 @@ body {
 .numero .valor {
   font-size: 3rem;
   font-weight: 800;
-  color: #ffffff;
+  color: #1d5c2b;
   display: block;
 }
 
 .numero .rotulo {
   font-size: 0.95rem;
-  color: #d8f5c4;
+  color: #2f6b39;
+}
+
+/* Em fundo escuro ou verde, os números ficam claros */
+.secao-escura .numero .valor,
+.secao-verde .numero .valor {
+  color: #ffffff;
+}
+
+.secao-escura .numero .rotulo,
+.secao-verde .numero .rotulo {
+  color: #eaffdf;
 }
 
 .nota-fonte {
   margin-top: 1.5rem;
   font-size: 0.85rem;
-  color: #a9d19b;
+  color: #5a7a5a;
   text-align: center;
 }
 
-.secao-escura .nota-fonte {
+.secao-escura .nota-fonte,
+.secao-verde .nota-fonte {
   color: #cfe8c0;
 }
 
@@ -386,6 +398,9 @@ body {
   transform: translateY(-2px);
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
 }
+
+/* Rodapé */
+.rodape {
   background: #0f2413;
   color: #a9d19b;
   text-align: center;
