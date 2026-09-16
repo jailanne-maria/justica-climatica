@@ -1,0 +1,181 @@
+@import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&family=VT323&display=swap');
+
+/* ===== Tema pixel-art / retrô do Reserva em Pé ===== */
+
+body.pixel {
+  font-family: 'VT323', 'Courier New', monospace;
+  font-size: 20px;
+  image-rendering: pixelated;
+  background-color: #0e2213;
+  background-image:
+    repeating-linear-gradient(0deg, rgba(0, 0, 0, 0.16) 0 2px, transparent 2px 4px),
+    radial-gradient(ellipse at 20% 10%, rgba(47, 122, 61, 0.35), transparent 55%),
+    radial-gradient(ellipse at 85% 90%, rgba(58, 111, 181, 0.18), transparent 55%);
+}
+
+body.pixel canvas,
+body.pixel img {
+  image-rendering: pixelated;
+  image-rendering: crisp-edges;
+}
+
+/* Cantos quadrados em tudo (visual 8/16 bits) */
+body.pixel *,
+body.pixel *::before,
+body.pixel *::after {
+  border-radius: 0 !important;
+}
+
+/* ─── Tipografia ─── */
+body.pixel h1,
+body.pixel h2,
+body.pixel h3,
+body.pixel .botao,
+body.pixel .botao-vr,
+body.pixel .info-ano,
+body.pixel .info-fase,
+body.pixel .info-dinheiro,
+body.pixel .fase-etiqueta,
+body.pixel .hud-box,
+body.pixel .medidor-cabecalho,
+body.pixel .cartao-acao strong,
+body.pixel .perfil-nome,
+body.pixel .perfil-metro strong,
+body.pixel .total-acessos,
+body.pixel .queimadas-cabecalho h2,
+body.pixel .avatar-nome {
+  font-family: 'Press Start 2P', 'VT323', monospace;
+  letter-spacing: 0;
+  line-height: 1.5;
+}
+
+body.pixel h1 { font-size: 1.9rem; }
+body.pixel h2 { font-size: 1.05rem; }
+body.pixel h3 { font-size: 0.82rem; }
+body.pixel .botao { font-size: 0.7rem; }
+body.pixel .info-ano,
+body.pixel .info-dinheiro { font-size: 0.78rem; }
+body.pixel .info-fase,
+body.pixel .fase-etiqueta { font-size: 0.6rem; }
+body.pixel .hud-box { font-size: 0.68rem; }
+body.pixel .medidor-cabecalho { font-size: 0.6rem; }
+body.pixel .perfil-nome { font-size: 0.9rem; }
+body.pixel .perfil-metro strong { font-size: 0.95rem; }
+
+body.pixel p,
+body.pixel li,
+body.pixel .cartao-acao,
+body.pixel .aviso-item,
+body.pixel .chat-msg,
+body.pixel .queimadas-texto,
+body.pixel .metro .rotulo,
+body.pixel .metro .valor {
+  font-family: 'VT323', monospace;
+  font-size: 1.15rem;
+  line-height: 1.45;
+}
+body.pixel .cartao-acao,
+body.pixel .log-item,
+body.pixel .chat-msg,
+body.pixel .metro .rotulo,
+body.pixel .metro .valor { font-size: 0.98rem; }
+body.pixel .log-item { font-family: 'VT323', monospace; font-size: 0.98rem; }
+
+/* ─── Caixas com sombra dura e borda grossa ─── */
+body.pixel .painel,
+body.pixel .historia-cartao,
+body.pixel .login-cartao,
+body.pixel .perfil-cartao,
+body.pixel .queimadas-cartao,
+body.pixel .personagem,
+body.pixel .cartao-acao,
+body.pixel .log-item,
+body.pixel .barra-topo,
+body.pixel .aviso-item,
+body.pixel .chat-painel,
+body.pixel .hud-box,
+body.pixel .metro,
+body.pixel .modal-cartao,
+body.pixel .painel-acao,
+body.pixel .painel-log,
+body.pixel .tela-intro h1 span,
+body.pixel .fim-evolucao,
+body.pixel .hud-aviso,
+body.pixel .queimadas-area,
+body.pixel .total-acessos,
+body.pixel .perfil-metro {
+  border-radius: 0 !important;
+  border-width: 3px !important;
+  box-shadow: 5px 5px 0 rgba(0, 0, 0, 0.55) !important;
+}
+
+/* ─── Botões estilo arcade ─── */
+body.pixel .botao,
+body.pixel .botao-vr,
+body.pixel .chat-botao,
+body.pixel .chat-entrada button {
+  border: 3px solid #0a1c0e !important;
+  box-shadow: 4px 4px 0 #06120a !important;
+  text-transform: uppercase;
+}
+body.pixel .botao:hover:not(:disabled),
+body.pixel .botao-vr:hover {
+  transform: translate(-2px, -2px);
+  box-shadow: 6px 6px 0 #06120a !important;
+}
+body.pixel .botao:active:not(:disabled),
+body.pixel .chat-botao:active {
+  transform: translate(2px, 2px);
+  box-shadow: 2px 2px 0 #06120a !important;
+}
+
+/* ─── Barras medidoras pixeladas ─── */
+body.pixel .barra,
+body.pixel .metro .barra {
+  border: 3px solid #06120a !important;
+  height: 20px;
+  background: #223322;
+  box-shadow: inset 0 0 0 2px rgba(0, 0, 0, 0.5) !important;
+  position: relative;
+}
+body.pixel .metro .barra { height: 14px; }
+body.pixel .barra-preenchimento,
+body.pixel .preenchimento {
+  border-radius: 0 !important;
+  box-shadow: none !important;
+}
+body.pixel .barra::after,
+body.pixel .metro .barra::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background-image: repeating-linear-gradient(90deg, rgba(0, 0, 0, 0.28) 0 2px, transparent 2px 10px);
+}
+
+/* ─── Desafio das queimadas ─── */
+body.pixel .fogo {
+  border: 3px solid #2a0d05;
+  box-shadow: 4px 4px 0 rgba(0, 0, 0, 0.5);
+}
+body.pixel .queimadas-area {
+  background-image:
+    repeating-linear-gradient(0deg, rgba(0, 0, 0, 0.3) 0 2px, transparent 2px 6px),
+    radial-gradient(ellipse at center, rgba(120, 60, 20, 0.4), rgba(20, 10, 5, 0.9));
+}
+
+/* ─── Avatares e joystick quadrados ─── */
+body.pixel .avatar,
+body.pixel .perfil-avatar,
+body.pixel .joystick-raio,
+body.pixel .joystick-knob,
+body.pixel .chat-botao {
+  border-radius: 0 !important;
+}
+
+/* ─── Chat ─── */
+body.pixel .chat-entrada input {
+  border-radius: 0 !important;
+  font-family: 'VT323', monospace;
+  font-size: 1.05rem;
+}

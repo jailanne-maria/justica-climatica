@@ -23,6 +23,9 @@ const RIO_MEIA_LARGURA = 7;
 const arbVerde = [0x2f9e44, 0x3d7a3d, 0x4a8f4a, 0x2a7a2f, 0x7a9a3d];
 const floresCores = [0xe74c3c, 0xf1c40f, 0xe67e22, 0x9b59b6, 0xffffff, 0x3498db];
 
+/* ===== Estilo pixelado (renderiza em baixa resolução e amplia) ===== */
+const ESCALA_PIXEL = 4;
+
 /* ===== Modo VR (Cardboard) ===== */
 let modoVR = false;
 let estereo = null;
@@ -355,10 +358,11 @@ function iniciar3D() {
 
   camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 0.1, 500);
 
-  renderizador = new THREE.WebGLRenderer({ antialias: true });
-  renderizador.setSize(window.innerWidth, window.innerHeight);
+  renderizador = new THREE.WebGLRenderer({ antialias: false });
+  renderizador.setPixelRatio(1);
   renderizador.shadowMap.enabled = true;
   document.getElementById('cena3d').appendChild(renderizador.domElement);
+  ajustarTamanhoRenderizador();
 
   const luzAmbiente = new THREE.AmbientLight(0xffffff, 0.55);
   cena.add(luzAmbiente);
@@ -381,13 +385,23 @@ function iniciar3D() {
   criarBorboletas();
   criarPassaros();
 
-  window.addEventListener('resize', () => {
-    camera.aspect = window.innerWidth / window.innerHeight;
-    camera.updateProjectionMatrix();
-    renderizador.setSize(window.innerWidth, window.innerHeight);
-  });
+  window.addEventListener('resize', ajustarTamanhoRenderizador);
 
   animar();
+}
+
+function ajustarTamanhoRenderizador() {
+  if (!renderizador || !camera) return;
+  const w = Math.max(160, Math.round(window.innerWidth / ESCALA_PIXEL));
+  const h = Math.max(120, Math.round(window.innerHeight / ESCALA_PIXEL));
+  renderizador.setPixelRatio(1);
+  renderizador.setSize(w, h, false);
+  const canvas = renderizador.domElement;
+  canvas.style.width = '100%';
+  canvas.style.height = '100%';
+  canvas.style.imageRendering = 'pixelated';
+  camera.aspect = w / h;
+  camera.updateProjectionMatrix();
 }
 
 function criarChao() {
@@ -419,6 +433,9 @@ function criarTexturaDeGrama() {
   textura.wrapS = THREE.RepeatWrapping;
   textura.wrapT = THREE.RepeatWrapping;
   textura.repeat.set(12, 12);
+  textura.magFilter = THREE.NearestFilter;
+  textura.minFilter = THREE.NearestFilter;
+  textura.generateMipmaps = false;
   return textura;
 }
 
@@ -745,6 +762,9 @@ function fazerTexto(texto) {
   ctx.textBaseline = 'middle';
   ctx.fillText(texto, 64, 64);
   const textura = new THREE.CanvasTexture(canvas);
+  textura.magFilter = THREE.NearestFilter;
+  textura.minFilter = THREE.NearestFilter;
+  textura.generateMipmaps = false;
   return textura;
 }
 
@@ -1131,8 +1151,8 @@ function posicionarCameraVR() {
 }
 
 function renderizarEstereo() {
-  const w = renderizador.domElement.clientWidth || window.innerWidth;
-  const h = renderizador.domElement.clientHeight || window.innerHeight;
+  const w = renderizador.domElement.width;
+  const h = renderizador.domElement.height;
 
   renderizador.setScissorTest(true);
 
