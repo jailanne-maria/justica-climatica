@@ -265,11 +265,10 @@ body {
 }
 
 @media (pointer: coarse) {
-  .stage {
-    width: 100%;
-    height: calc(100dvh - 130px);
-  }
   .jogo2d { padding: 0; }
+  .stage {
+    width: min(100vw, calc((100dvh - 110px) * 1.7778));
+  }
 }
 
 /* ─── Tela "gire o celular" ─── */
