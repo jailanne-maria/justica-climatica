@@ -8,7 +8,7 @@ const LARGURA_MUNDO = 2400;
 
 const GRAV = 0.55;
 const PULO = -11;
-const VEL = 3.2;
+const VEL = 2.4;
 const PJ_L = 22;
 const PJ_A = 30;
 
@@ -90,7 +90,8 @@ const FASES = [
 let faseAtual = 0;
 let pontos = 0;
 let vidas = 3;
-let estado = 'inicio'; // inicio | fase | jogando | fim
+let fasesDesbloqueadas = 1;
+let estado = 'inicio'; // inicio | mapa | fase | jogando | fim
 
 let jogador = { x: 60, y: 200, vx: 0, vy: 0, noChao: false, invencivel: false, invTimer: 0, olhandoDir: 1 };
 let plataformas = [];
@@ -111,6 +112,7 @@ const el = {
   hudPontos: document.getElementById('hud-pontos-valor'),
   hudVidas: document.getElementById('hud-vidas'),
   telaInicio: document.getElementById('tela-inicio'),
+  telaMapa: document.getElementById('tela-mapa'),
   telaFase: document.getElementById('tela-fase'),
   telaFim: document.getElementById('tela-fim'),
   faseEtiqueta: document.getElementById('fase-etiqueta'),
@@ -155,12 +157,35 @@ function iniciarJogo() {
   faseAtual = 0;
   pontos = 0;
   vidas = 3;
+  fasesDesbloqueadas = 1;
   el.telaInicio.hidden = true;
   el.telaFim.hidden = true;
   el.hud.hidden = false;
-  carregarFase(0);
-  mostrarIntroFase();
   iniciarMusica();
+  mostrarMapa();
+}
+
+function mostrarMapa() {
+  estado = 'mapa';
+  el.telaMapa.hidden = false;
+  atualizarMapa();
+}
+
+function atualizarMapa() {
+  for (let i = 0; i < FASES.length; i++) {
+    const nodo = document.getElementById('nodo-' + i);
+    const desbloqueada = i < fasesDesbloqueadas;
+    nodo.disabled = !desbloqueada;
+    nodo.classList.toggle('bloqueado', !desbloqueada);
+    nodo.querySelector('.cadeado').hidden = desbloqueada;
+  }
+}
+
+function jogarFase(i) {
+  faseAtual = i;
+  el.telaMapa.hidden = true;
+  carregarFase(i);
+  mostrarIntroFase();
 }
 
 function mostrarIntroFase() {
@@ -182,9 +207,8 @@ function continuarFase() {
 function completarFase() {
   pontos += 100;
   if (faseAtual < FASES.length - 1) {
-    faseAtual += 1;
-    carregarFase(faseAtual);
-    mostrarIntroFase();
+    fasesDesbloqueadas = Math.max(fasesDesbloqueadas, faseAtual + 2);
+    mostrarMapa();
   } else {
     vencer();
   }
@@ -873,6 +897,10 @@ document.getElementById('botao-iniciar').addEventListener('click', iniciarJogo);
 document.getElementById('botao-continuar').addEventListener('click', continuarFase);
 document.getElementById('botao-reiniciar').addEventListener('click', reiniciar);
 document.getElementById('botao-som').addEventListener('click', alternarMusica);
+
+for (let i = 0; i < FASES.length; i++) {
+  document.getElementById('nodo-' + i).addEventListener('click', () => jogarFase(i));
+}
 
 configurarTouch();
 atualizarHud();
