@@ -177,6 +177,7 @@ function atualizarMapa() {
     const desbloqueada = i < fasesDesbloqueadas;
     nodo.disabled = !desbloqueada;
     nodo.classList.toggle('bloqueado', !desbloqueada);
+    nodo.classList.toggle('atual', i === fasesDesbloqueadas - 1);
     nodo.querySelector('.cadeado').hidden = desbloqueada;
   }
 }

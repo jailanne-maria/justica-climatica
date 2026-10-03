@@ -263,6 +263,27 @@ body {
   border-color: #6d7d63;
 }
 
+.nodo.atual {
+  border-color: #ffd21f;
+  box-shadow: 0 0 0 3px #ffd21f, 0 0 20px rgba(255, 210, 31, 0.55);
+}
+
+.nodo.atual::before {
+  content: "🧢";
+  position: absolute;
+  top: -28px;
+  left: 50%;
+  transform: translateX(-50%);
+  font-size: 18px;
+  line-height: 1;
+  animation: bob-marcador 1s ease-in-out infinite;
+}
+
+@keyframes bob-marcador {
+  0%, 100% { transform: translateX(-50%) translateY(0); }
+  50% { transform: translateX(-50%) translateY(-4px); }
+}
+
 .nodo-emoji {
   font-size: 30px;
   line-height: 1;
