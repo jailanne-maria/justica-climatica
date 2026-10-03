@@ -272,6 +272,7 @@ function atualizar() {
     ) {
       c.vivo = false;
       pontos += 10;
+      somMoeda();
       atualizarHud();
     }
   }
@@ -339,6 +340,7 @@ function extrairLatexProximo() {
   if (!s) return;
   s.extraida = true;
   pontos += 25;
+  somLatex();
   adicionarFeedback(s.x, CHAO_Y - 68, '+25 LATEX');
   atualizarHud();
 }
@@ -705,7 +707,8 @@ const NOTAS = {
   C3: 130.81, D3: 146.83, E3: 164.81, F3: 174.61, G3: 196.00,
   A3: 220.00, B3: 246.94,
   C4: 261.63, D4: 293.66, E4: 329.63, F4: 349.23, G4: 392.00,
-  A4: 440.00, B4: 493.88, C5: 523.25, D5: 587.33, E5: 659.25
+  A4: 440.00, B4: 493.88, C5: 523.25, D5: 587.33, E5: 659.25,
+  B5: 987.77, E6: 1318.51
 };
 
 const MELODIA = [
@@ -777,6 +780,38 @@ function alternarMusica() {
   } else {
     iniciarMusica();
   }
+}
+
+function garantirAudio() {
+  const AC = window.AudioContext || window.webkitAudioContext;
+  if (!AC) return false;
+  if (!audioCtx) audioCtx = new AC();
+  if (audioCtx.state === 'suspended') audioCtx.resume();
+  return true;
+}
+
+function somMoeda() {
+  if (!garantirAudio()) return;
+  const agora = audioCtx.currentTime;
+  tocarNota(NOTAS.B5, agora, 0.08, 'square', 0.12);
+  tocarNota(NOTAS.E6, agora + 0.06, 0.15, 'square', 0.12);
+}
+
+function somLatex() {
+  if (!garantirAudio()) return;
+  const agora = audioCtx.currentTime;
+  const osc = audioCtx.createOscillator();
+  const g = audioCtx.createGain();
+  osc.type = 'triangle';
+  osc.frequency.setValueAtTime(520, agora);
+  osc.frequency.exponentialRampToValueAtTime(180, agora + 0.18);
+  g.gain.setValueAtTime(0.0001, agora);
+  g.gain.exponentialRampToValueAtTime(0.2, agora + 0.02);
+  g.gain.exponentialRampToValueAtTime(0.0001, agora + 0.2);
+  osc.connect(g);
+  g.connect(audioCtx.destination);
+  osc.start(agora);
+  osc.stop(agora + 0.22);
 }
 
 /* ===== Ligações ===== */
