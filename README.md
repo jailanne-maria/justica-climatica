@@ -1,39 +1,38 @@
 # Reserva em Pé — Justiça Climática
 
-Site educativo sobre justiça climática no Acre, com o jogo **"Reserva em Pé 3D"**, onde você anda pela floresta, conversa com os personagens e protege a reserva.
+Site educativo sobre justiça climática no Acre, com o jogo **"Reserva em Pé"**, um plataforma 2D onde você corre, pula e protege a floresta.
 
-🔗 **Jogar:** https://jailanne-maria.github.io/justica-climatica/jogo3d.html
+🔗 **Jogar:** https://jailanne-maria.github.io/justica-climatica/jogo.html
 
 ## O que tem aqui
 
 - **index.html** — site explicativo (justiça climática, El Niño, CadÚnico, Rio Branco)
-- **jogo3d.html / jogo3d.js / jogo3d.css** — o jogo (12 anos, 4 personagens, 3D)
+- **jogo.html / jogo.js / jogo.css** — o jogo (plataforma 2D em 3 fases)
 - **sobre.html** — página sobre o projeto
 - **pixel.css** — tema retrô/pixel-art compartilhado
-- **_backup-2d/** — versão antiga 2D (não usada, mantida só como referência)
+- **_backup-2d/** e **_backup-3d/** — versões antigas (não publicadas)
 
 ## Sobre o jogo
 
-Você anda pela floresta do Acre com **WASD/setas** (ou **D-pad no celular**) e aperta **E** para conversar com os personagens. Em uma simulação de **12 anos**, você alterna entre 4 personagens:
+Um plataforma 2D em **3 fases**, cada uma contando uma etapa da luta pela floresta:
 
-| Personagem | Papel | Exemplo de ação |
+| Fase | Tema | O que você faz |
 |---|---|---|
-| 🌰 Dona Marinalva | Extrativista | Colher castanha, fazer empate, plantar mudas |
-| 🐟 Seu João | Ribeirinho | Pescar com manejo, proteger igarapés, vigiar queimadas |
-| 🏫 Guajarina | Amazônia urbana | Aula de educação ambiental, mutirão, campanha eleitoral |
-| 🏹 Cacique Araquém | Guardião do território | Demarcar território, empate, compartilhar saberes |
+| 1 · Resistir | O empate e Chico Mendes | Pule obstáculos e colete castanhas |
+| 2 · Construir | A Reserva Extrativista | Fuja do gado que avança sobre a mata |
+| 3 · Consolidar | Marina Silva e as lideranças | Atravesse o desafio final e vença |
 
-Cada ação afeta indicadores da floresta (extrativismo, ribeirinho, urbano, apoio, pressão) — ensinando, na prática, que **justiça climática se constrói com a floresta em pé e com as comunidades fortalecidas**.
+Controles: **setas / A-D** para andar, **espaço / W** para pular (ou **D-pad + botão A** no celular).
 
 ## Como rodar localmente
 
-Abra o `index.html` (ou `jogo3d.html`) no navegador. O jogo carrega o Three.js via CDN, então precisa de internet na primeira carga.
+Abra o `index.html` (ou `jogo.html`) no navegador — roda 100% no browser, sem servidor.
 
 ## Tecnologias
 
-- HTML, CSS, JavaScript puro
-- Three.js (r128) — cena 3D em pixel-art
-- Controles de toque para mobile (D-pad + botão de ação)
+- HTML5 Canvas
+- CSS e JavaScript puro
+- Controles de toque para mobile (D-pad + botão de pulo)
 
 ## Por que este projeto
 

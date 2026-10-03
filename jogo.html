@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <meta name="description" content="Reserva em Pé: plataforma 2D onde você corre, pula e protege a floresta do Acre em 3 fases.">
+  <title>Reserva em Pé</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=VT323&display=swap">
+  <link rel="stylesheet" href="pixel.css">
+  <link rel="stylesheet" href="jogo.css">
+</head>
+<body class="pixel">
+  <div class="jogo2d">
+    <div class="stage" id="stage">
+      <canvas id="tela" width="480" height="270"></canvas>
+
+      <div class="hud2d" id="hud2d" hidden>
+        <span class="hud-tag" id="hud-fase">Fase 1</span>
+        <span class="hud-pontos">🌰 <span id="hud-pontos-valor">0</span></span>
+        <span class="hud-vidas" id="hud-vidas">❤️❤️❤️</span>
+      </div>
+
+      <div class="overlay overlay-centro" id="tela-inicio">
+        <div class="logo">
+          <span class="s">RESERVA</span>
+          <span class="f">EM PÉ</span>
+        </div>
+        <p class="legenda">Corra, pule e ajude a manter a floresta do Acre em pé.</p>
+        <button class="botao" id="botao-iniciar">🌱 Entrar na floresta</button>
+      </div>
+
+      <div class="overlay overlay-cartao" id="tela-fase" hidden>
+        <span class="tag" id="fase-etiqueta">Fase 1 · Resistir</span>
+        <h2 id="fase-titulo"></h2>
+        <p class="txt" id="fase-texto"></p>
+        <p class="fato"><strong>Fato:</strong> <span id="fase-fato"></span></p>
+        <p class="src">Fonte: <span id="fase-fonte"></span></p>
+        <button class="botao" id="botao-continuar">Continuar →</button>
+      </div>
+
+      <div class="overlay overlay-centro" id="tela-fim" hidden>
+        <h2 id="fim-titulo"></h2>
+        <p class="txt" id="fim-mensagem"></p>
+        <button class="botao" id="botao-reiniciar">🌱 Plantar de novo</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="touch" id="touch-controles" hidden>
+    <div class="touch-mover">
+      <button class="tbtn" data-dir="esq" aria-label="Esquerda">◀</button>
+      <button class="tbtn" data-dir="dir" aria-label="Direita">▶</button>
+    </div>
+    <button class="tbtn tbtn-pulo" id="botao-pulo" aria-label="Pular">A</button>
+  </div>
+
+  <script src="jogo.js"></script>
+</body>
+</html>
