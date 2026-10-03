@@ -17,7 +17,7 @@ const FASES = [
   {
     nome: 'Fase 1 · Resistir',
     titulo: 'O empate: a arma dos que amam a floresta',
-    texto: 'Nos anos 1980, os seringueiros do Acre criaram o "empate": famílias inteiras sentavam-se diante das motosserras para impedir a derrubada. Chico Mendes liderou essa resistência pacífica. Atravesse a floresta e colete castanhas — cada uma vale mais com a mata em pé.',
+    texto: 'Nos anos 1980, os seringueiros do Acre criaram o "empate": famílias inteiras sentavam-se diante das motosserras para impedir a derrubada. Chico Mendes liderou essa resistência pacífica. Atravesse a floresta coletando moedas e extraia látex das seringueiras — a mata em pé paga a conta.',
     fato: 'O "empate" parou o desmatamento sem violência.',
     fonte: 'Memória dos empates · Acre',
     ceu: '#7ec8ff',
@@ -31,6 +31,7 @@ const FASES = [
     ],
     fogos: [[1150], [1900]],
     gados: [],
+    seringueiras: [500, 1300, 2050],
     inicio: [60, 200],
     fim: [2320, 200]
   },
@@ -54,6 +55,7 @@ const FASES = [
       { x: 900, min: 760, max: 1260, dir: 1 },
       { x: 1800, min: 1500, max: 1940, dir: -1 }
     ],
+    seringueiras: [300, 1000, 1700, 2250],
     inicio: [60, 200],
     fim: [2300, 200]
   },
@@ -78,6 +80,7 @@ const FASES = [
       { x: 1400, min: 1240, max: 1600, dir: -1 },
       { x: 1900, min: 1800, max: 2180, dir: 1 }
     ],
+    seringueiras: [250, 850, 1500, 2000, 2320],
     inicio: [60, 200],
     fim: [2340, 200]
   }
@@ -94,6 +97,8 @@ let plataformas = [];
 let coletaveis = [];
 let fogos = [];
 let gados = [];
+let seringueiras = [];
+let feedbacks = [];
 let cameraX = 0;
 
 const teclas = { esq: false, dir: false };
@@ -130,6 +135,8 @@ function carregarFase(i) {
   coletaveis = f.coletaveis.map(([x, y]) => ({ x, y, vivo: true }));
   fogos = f.fogos.map(([x]) => ({ x, y: CHAO_Y - 22 }));
   gados = f.gados.map((g) => ({ ...g, y: CHAO_Y - 30 }));
+  seringueiras = (f.seringueiras || []).map((x) => ({ x, y: CHAO_Y, extraida: false }));
+  feedbacks = [];
   reposicionarInicio();
   cameraX = 0;
 }
@@ -268,6 +275,17 @@ function atualizar() {
     }
   }
 
+  // extrair látex das seringueiras
+  for (const s of seringueiras) {
+    if (s.extraida) continue;
+    if (colideJogador(s.x - 6, CHAO_Y - 52, 32, 52)) {
+      s.extraida = true;
+      pontos += 25;
+      adicionarFeedback(s.x, CHAO_Y - 68, '+25 LATEX');
+      atualizarHud();
+    }
+  }
+
   // gado
   for (const g of gados) {
     g.x += g.dir * 1.4;
@@ -293,6 +311,12 @@ function atualizar() {
     completarFase();
     return;
   }
+
+  for (const fb of feedbacks) {
+    fb.y -= 0.5;
+    fb.vida -= 1;
+  }
+  feedbacks = feedbacks.filter((fb) => fb.vida > 0);
 
   cameraX = Math.max(0, Math.min(LARGURA_MUNDO - LARGURA, p.x - LARGURA / 2));
 }
@@ -339,11 +363,13 @@ function desenhar() {
 
   desenharArvores();
   desenharPlataformas();
+  desenharSeringueiras();
   desenharObjetivo();
   desenharColetaveis();
   desenharFogos();
   desenharGados();
   desenharJogador();
+  desenharFeedbacks();
 }
 
 function desenharArvores() {
@@ -386,13 +412,65 @@ function desenharPlataformas() {
 }
 
 function desenharColetaveis() {
-  ctx.font = '18px sans-serif';
-  ctx.textAlign = 'center';
-  ctx.textBaseline = 'middle';
   for (const c of coletaveis) {
     if (!c.vivo) continue;
-    const bob = Math.sin(Date.now() * 0.006 + c.x) * 2;
-    ctx.fillText('🌰', c.x - cameraX, c.y + bob);
+    const t = Date.now() * 0.01;
+    const escala = Math.abs(Math.cos(t + c.x * 0.05));
+    const cx = c.x - cameraX;
+    const cy = c.y + Math.sin(t * 0.8 + c.x) * 2;
+    desenharMoeda(cx, cy, escala);
+  }
+}
+
+function desenharMoeda(cx, cy, escala) {
+  const r = 7;
+  const w = Math.max(1, Math.round(r * (0.25 + escala * 0.75)));
+  ctx.fillStyle = '#c89400';
+  ctx.fillRect(cx - w, cy - r, w * 2, r * 2);
+  ctx.fillStyle = '#ffd21f';
+  ctx.fillRect(cx - w + 1, cy - r + 1, w * 2 - 2, r * 2 - 2);
+  ctx.fillStyle = '#fff3b0';
+  ctx.fillRect(cx - Math.max(1, w - 1), cy - 2, Math.max(1, (w - 1) * 2), 2);
+}
+
+function desenharSeringueiras() {
+  for (const s of seringueiras) {
+    const x = s.x - cameraX;
+    const base = CHAO_Y;
+    const h = 48;
+    // tronco
+    ctx.fillStyle = '#8a6a45';
+    ctx.fillRect(x + 6, base - h, 8, h);
+    // corte para sangria
+    ctx.fillStyle = '#e8d8b0';
+    ctx.fillRect(x + 3, base - h + 12, 14, 3);
+    // copa
+    ctx.fillStyle = '#2a6e35';
+    ctx.fillRect(x, base - h - 14, 20, 14);
+    ctx.fillStyle = '#357a3e';
+    ctx.fillRect(x + 4, base - h - 20, 12, 6);
+    // tigela (copo coletor)
+    ctx.fillStyle = '#6b4a2b';
+    ctx.fillRect(x + 2, base - 5, 16, 5);
+    // látex escorrendo
+    if (!s.extraida) {
+      ctx.fillStyle = '#ffffff';
+      ctx.fillRect(x + 9, base - h + 16, 3, 10);
+    }
+  }
+}
+
+function adicionarFeedback(x, y, texto) {
+  feedbacks.push({ x, y, texto, vida: 50 });
+}
+
+function desenharFeedbacks() {
+  ctx.font = '9px "Press Start 2P", monospace';
+  ctx.textAlign = 'center';
+  ctx.textBaseline = 'middle';
+  for (const fb of feedbacks) {
+    ctx.fillStyle = '#ffffff';
+    ctx.fillText(fb.texto, fb.x - cameraX, fb.y);
   }
 }
 
@@ -438,40 +516,46 @@ function desenharJogador() {
   const x = Math.round(p.x - cameraX);
   const y = Math.round(p.y);
 
-  // pernas
-  ctx.fillStyle = '#1d3320';
-  const passo = p.noChao ? Math.floor(Date.now() / 120) % 2 : 0;
-  ctx.fillRect(x + 4, y + 23, 6, 7);
-  ctx.fillRect(x + 12, y + 23, 6, 7);
+  // macacão azul (pernas)
+  ctx.fillStyle = '#2449c9';
+  ctx.fillRect(x + 4, y + 21, 6, 9);
+  ctx.fillRect(x + 12, y + 21, 6, 9);
+  // sapatos
+  ctx.fillStyle = '#6b4a2b';
+  ctx.fillRect(x + 4, y + 27, 6, 3);
+  ctx.fillRect(x + 12, y + 27, 6, 3);
 
-  // torso
-  ctx.fillStyle = '#2f7a3d';
-  ctx.fillRect(x + 3, y + 10, 16, 14);
+  // camisa vermelha
+  ctx.fillStyle = '#e8412c';
+  ctx.fillRect(x + 3, y + 10, 16, 13);
 
-  // braço
+  // braço + mão
+  ctx.fillStyle = '#e8412c';
+  ctx.fillRect(p.olhandoDir > 0 ? x + 17 : x - 1, y + 11, 3, 7);
   ctx.fillStyle = '#e8b882';
-  ctx.fillRect(p.olhandoDir > 0 ? x + 17 : x - 1, y + 11, 3, 8);
+  ctx.fillRect(p.olhandoDir > 0 ? x + 17 : x - 1, y + 17, 3, 3);
 
   // cabeça
   ctx.fillStyle = '#e8b882';
   ctx.fillRect(x + 5, y, 12, 11);
 
-  // gorro/cabelo
-  ctx.fillStyle = '#1d5c2b';
-  ctx.fillRect(x + 5, y, 12, 4);
+  // boné vermelho
+  ctx.fillStyle = '#e8412c';
+  ctx.fillRect(x + 3, y, 16, 4);
+  ctx.fillRect(x + 5, y - 2, 12, 3);
 
   // poronga (lâmpada de cabeça dos seringueiros)
   ctx.fillStyle = '#5b3a1e';
-  ctx.fillRect(x + 3, y - 2, 16, 3);
+  ctx.fillRect(x + 3, y - 5, 16, 3);
   ctx.fillStyle = '#c89450';
-  ctx.fillRect(x + 7, y - 7, 7, 6);
+  ctx.fillRect(x + 7, y - 10, 7, 6);
   ctx.fillStyle = '#fff3b0';
-  ctx.fillRect(x + 8, y - 6, 4, 2);
+  ctx.fillRect(x + 8, y - 9, 4, 2);
   const fl = Math.floor(Date.now() / 140) % 3;
   ctx.fillStyle = '#ff9f1a';
-  ctx.fillRect(x + 9, y - 9 - fl, 2, 3);
+  ctx.fillRect(x + 9, y - 12 - fl, 2, 3);
   ctx.fillStyle = '#ffd21f';
-  ctx.fillRect(x + 10, y - 8 - fl, 1, 2);
+  ctx.fillRect(x + 10, y - 11 - fl, 1, 2);
 
   // olho
   ctx.fillStyle = '#1d3320';
