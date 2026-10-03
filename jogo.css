@@ -255,3 +255,97 @@ body {
   }
   .jogo2d { padding: 0; }
 }
+
+/* ─── Tela "gire o celular" ─── */
+.girar {
+  position: fixed;
+  inset: 0;
+  z-index: 60;
+  background: #0e2213;
+  color: #eaffdf;
+  display: none;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 22px;
+  padding: 24px 16px;
+  text-align: center;
+}
+
+.girar-logo {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  font-family: 'Press Start 2P', 'Courier New', monospace;
+  text-transform: uppercase;
+  filter: drop-shadow(3px 3px 0 #000);
+}
+
+.girar-logo .s {
+  color: #eaffdf;
+  font-size: 0.7rem;
+  -webkit-text-stroke: 1px #000;
+  paint-order: stroke fill;
+}
+
+.girar-logo .f {
+  color: #58c07a;
+  font-size: 1.4rem;
+  line-height: 1;
+  -webkit-text-stroke: 1.5px #000;
+  paint-order: stroke fill;
+}
+
+.girar-telefone {
+  position: relative;
+  width: 54px;
+  height: 92px;
+  border: 4px solid #ffd21f;
+  box-shadow: 0 0 0 2px #000;
+  animation: girar-telefone 2.4s ease-in-out infinite;
+}
+
+.girar-telefone::before {
+  content: "";
+  position: absolute;
+  bottom: 6px;
+  left: 50%;
+  width: 14px;
+  height: 4px;
+  margin-left: -7px;
+  background: #ffd21f;
+}
+
+.girar-telefone::after {
+  content: "";
+  position: absolute;
+  inset: 8px 5px 16px;
+  background: linear-gradient(#5aa8ff 60%, #3ec04a 60%);
+}
+
+.girar-titulo {
+  font-family: 'Press Start 2P', 'Courier New', monospace;
+  color: #ffd21f;
+  text-transform: uppercase;
+  font-size: 0.85rem;
+  line-height: 1.6;
+}
+
+.girar-sub {
+  font-family: 'VT323', 'Courier New', monospace;
+  font-size: 1.35rem;
+  line-height: 1.1;
+  max-width: 26ch;
+  color: #cfe8c0;
+}
+
+@keyframes girar-telefone {
+  0%, 25% { transform: rotate(0deg); }
+  55%, 85% { transform: rotate(-90deg); }
+  100% { transform: rotate(0deg); }
+}
+
+@media (orientation: portrait) and (max-width: 900px) {
+  .girar { display: flex; }
+}

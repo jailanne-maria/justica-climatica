@@ -337,12 +337,38 @@ function desenhar() {
     ctx.fill();
   }
 
+  desenharArvores();
   desenharPlataformas();
   desenharObjetivo();
   desenharColetaveis();
   desenharFogos();
   desenharGados();
   desenharJogador();
+}
+
+function desenharArvores() {
+  const offset = cameraX * 0.45;
+  const espaco = 44;
+  const primeiro = Math.floor(offset / espaco) - 1;
+  for (let i = primeiro; i < primeiro + 14; i++) {
+    const semente = (i * 2654435761) >>> 0;
+    const x = i * espaco - offset + (semente % 20) - 10;
+    const altura = 44 + (semente % 5) * 9;
+    const largura = 20 + (semente % 3) * 5;
+    const topo = ALTURA - altura;
+
+    // tronco
+    ctx.fillStyle = '#3a2513';
+    ctx.fillRect(x + largura / 2 - 2, topo, 4, altura);
+
+    // copa em camadas
+    ctx.fillStyle = '#1e4a28';
+    ctx.fillRect(x, topo - 12, largura, 12);
+    ctx.fillStyle = '#2a6133';
+    ctx.fillRect(x + 4, topo - 22, largura - 8, 10);
+    ctx.fillStyle = '#357a3e';
+    ctx.fillRect(x + 7, topo - 30, largura - 14, 8);
+  }
 }
 
 function desenharPlataformas() {
@@ -433,6 +459,19 @@ function desenharJogador() {
   // gorro/cabelo
   ctx.fillStyle = '#1d5c2b';
   ctx.fillRect(x + 5, y, 12, 4);
+
+  // poronga (lâmpada de cabeça dos seringueiros)
+  ctx.fillStyle = '#5b3a1e';
+  ctx.fillRect(x + 3, y - 2, 16, 3);
+  ctx.fillStyle = '#c89450';
+  ctx.fillRect(x + 7, y - 7, 7, 6);
+  ctx.fillStyle = '#fff3b0';
+  ctx.fillRect(x + 8, y - 6, 4, 2);
+  const fl = Math.floor(Date.now() / 140) % 3;
+  ctx.fillStyle = '#ff9f1a';
+  ctx.fillRect(x + 9, y - 9 - fl, 2, 3);
+  ctx.fillStyle = '#ffd21f';
+  ctx.fillRect(x + 10, y - 8 - fl, 1, 2);
 
   // olho
   ctx.fillStyle = '#1d3320';
