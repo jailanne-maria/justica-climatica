@@ -248,6 +248,22 @@ body {
   color: #0a1c0e;
 }
 
+.touch-acoes {
+  display: flex;
+  gap: 12px;
+  align-items: flex-end;
+  pointer-events: auto;
+}
+
+.tbtn-b {
+  width: 64px;
+  height: 64px;
+  font-size: 22px;
+  background: rgba(255, 210, 31, 0.85);
+  border-color: #e8412c;
+  color: #1a1020;
+}
+
 @media (pointer: coarse) {
   .stage {
     width: 100%;

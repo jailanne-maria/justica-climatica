@@ -193,7 +193,7 @@ function vencer() {
   estado = 'fim';
   el.telaFim.hidden = false;
   el.fimTitulo.textContent = '🏆 Floresta em pé! Você venceu.';
-  el.fimMensagem.textContent = `Você atravessou as 3 fases com ${pontos} pontos. Os empates, a educação e o voto venceram o desmatamento. Chico Mendes ficaria orgulhoso.`;
+  el.fimMensagem.textContent = `Maximiano resgatou a princesa Oscarina! Você atravessou as 3 fases com ${pontos} pontos. Os empates, a educação e o voto venceram o desmatamento. Chico Mendes ficaria orgulhoso.`;
 }
 
 function gameOver() {
@@ -275,17 +275,6 @@ function atualizar() {
     }
   }
 
-  // extrair látex das seringueiras
-  for (const s of seringueiras) {
-    if (s.extraida) continue;
-    if (colideJogador(s.x - 6, CHAO_Y - 52, 32, 52)) {
-      s.extraida = true;
-      pontos += 25;
-      adicionarFeedback(s.x, CHAO_Y - 68, '+25 LATEX');
-      atualizarHud();
-    }
-  }
-
   // gado
   for (const g of gados) {
     g.x += g.dir * 1.4;
@@ -334,6 +323,25 @@ function pular() {
   }
 }
 
+function seringueiraProxima() {
+  const p = jogador;
+  for (const s of seringueiras) {
+    if (s.extraida) continue;
+    if (Math.abs(p.x + PJ_L / 2 - s.x) < 40) return s;
+  }
+  return null;
+}
+
+function extrairLatexProximo() {
+  if (estado !== 'jogando') return;
+  const s = seringueiraProxima();
+  if (!s) return;
+  s.extraida = true;
+  pontos += 25;
+  adicionarFeedback(s.x, CHAO_Y - 68, '+25 LATEX');
+  atualizarHud();
+}
+
 /* ===== Desenho ===== */
 function desenhar() {
   const f = FASES[faseAtual];
@@ -348,6 +356,8 @@ function desenhar() {
   // sol
   ctx.fillStyle = '#fff3b0';
   ctx.fillRect(400, 26, 26, 26);
+
+  desenharNuvens();
 
   // colinas distantes (parallax)
   ctx.fillStyle = f.colina;
@@ -370,6 +380,45 @@ function desenhar() {
   desenharGados();
   desenharJogador();
   desenharFeedbacks();
+  desenharPromptLatex();
+}
+
+function desenharNuvens() {
+  const desloca = (Date.now() * 0.01 + cameraX * 0.2) % 900;
+  for (let i = 0; i < 6; i++) {
+    const cx = ((i * 160 - desloca) % 900 + 900) % 900 - 80;
+    const cy = 22 + (i % 3) * 26;
+    ctx.fillStyle = '#ffffff';
+    ctx.fillRect(cx, cy, 38, 10);
+    ctx.fillRect(cx + 8, cy - 8, 20, 8);
+    ctx.fillRect(cx + 4, cy - 4, 30, 6);
+  }
+}
+
+function desenharRotulo(x, y, texto) {
+  ctx.font = '7px "Press Start 2P", monospace';
+  ctx.textAlign = 'center';
+  ctx.textBaseline = 'middle';
+  ctx.fillStyle = 'rgba(0, 0, 0, 0.65)';
+  ctx.fillText(texto, x + 1, y + 1);
+  ctx.fillStyle = '#ffffff';
+  ctx.fillText(texto, x, y);
+}
+
+function desenharPromptLatex() {
+  if (estado !== 'jogando') return;
+  const s = seringueiraProxima();
+  if (!s) return;
+  const x = s.x - cameraX;
+  const y = CHAO_Y - 64;
+  const tecla = controlesTouchAtivos ? 'B' : 'E';
+  ctx.fillStyle = '#ffd21f';
+  ctx.fillRect(x - 9, y - 9, 18, 18);
+  ctx.fillStyle = '#1a1020';
+  ctx.font = '11px "Press Start 2P", monospace';
+  ctx.textAlign = 'center';
+  ctx.textBaseline = 'middle';
+  ctx.fillText(tecla, x, y);
 }
 
 function desenharArvores() {
@@ -500,14 +549,24 @@ function desenharGados() {
 function desenharObjetivo() {
   const fim = FASES[faseAtual].fim;
   const x = fim[0] - cameraX;
-  // mastro
-  ctx.fillStyle = '#dddddd';
-  ctx.fillRect(x, fim[1] - 46, 3, 46);
-  // bandeira
+  const base = CHAO_Y;
+
+  // princesa Oscarina
+  ctx.fillStyle = '#e84393';
+  ctx.fillRect(x + 2, base - 20, 16, 20);
+  ctx.fillStyle = '#c0307a';
+  ctx.fillRect(x, base - 6, 20, 6);
+  // cabeça
+  ctx.fillStyle = '#e8b882';
+  ctx.fillRect(x + 5, base - 30, 10, 11);
+  // cabelo
+  ctx.fillStyle = '#5b3a1e';
+  ctx.fillRect(x + 4, base - 32, 12, 4);
+  // coroa
   ctx.fillStyle = '#ffd21f';
-  ctx.fillRect(x + 3, fim[1] - 46, 18, 12);
-  ctx.fillStyle = '#2f7a3d';
-  ctx.fillRect(x + 3, fim[1] - 40, 18, 6);
+  ctx.fillRect(x + 7, base - 35, 6, 3);
+
+  desenharRotulo(x + 10, base - 44, 'OSCARINA');
 }
 
 function desenharJogador() {
@@ -560,6 +619,8 @@ function desenharJogador() {
   // olho
   ctx.fillStyle = '#1d3320';
   ctx.fillRect(p.olhandoDir > 0 ? x + 13 : x + 6, y + 5, 3, 3);
+
+  desenharRotulo(x + 11, y - 20, 'MAXIMIANO');
 }
 
 function loop() {
@@ -580,6 +641,7 @@ window.addEventListener('keydown', (e) => {
     e.preventDefault();
     pular();
   }
+  if (k === 'e') extrairLatexProximo();
   if (k === 'enter') {
     if (estado === 'inicio') iniciarJogo();
     else if (estado === 'fase') continuarFase();
@@ -621,6 +683,15 @@ function configurarTouch() {
   pulo.addEventListener('pointerdown', pularAgora);
   pulo.addEventListener('pointerup', soltarPulo);
   pulo.addEventListener('pointercancel', soltarPulo);
+
+  const latex = document.getElementById('botao-latex');
+  const extrairAgora = (e) => { e.preventDefault(); extrairLatexProximo(); latex.classList.add('on'); };
+  const soltarLatex = () => latex.classList.remove('on');
+  latex.addEventListener('touchstart', extrairAgora, { passive: false });
+  latex.addEventListener('touchend', soltarLatex);
+  latex.addEventListener('pointerdown', extrairAgora);
+  latex.addEventListener('pointerup', soltarLatex);
+  latex.addEventListener('pointercancel', soltarLatex);
 }
 
 function reiniciar() {
