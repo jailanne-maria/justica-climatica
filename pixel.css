@@ -49,9 +49,9 @@ body.pixel .avatar-nome {
   line-height: 1.5;
 }
 
-body.pixel h1 { font-size: 1.9rem; }
-body.pixel h2 { font-size: 1.05rem; }
-body.pixel h3 { font-size: 0.82rem; }
+body.pixel h1 { font-size: clamp(1.35rem, 4vw, 1.9rem); }
+body.pixel h2 { font-size: clamp(0.95rem, 2.4vw, 1.05rem); }
+body.pixel h3 { font-size: clamp(0.78rem, 2vw, 0.82rem); }
 body.pixel .botao { font-size: 0.7rem; }
 body.pixel .info-ano,
 body.pixel .info-dinheiro { font-size: 0.78rem; }
@@ -178,4 +178,48 @@ body.pixel .chat-entrada input {
   border-radius: 0 !important;
   font-family: 'VT323', monospace;
   font-size: 1.05rem;
+}
+
+/* ─── Acessibilidade e toque ─── */
+body.pixel * {
+  -webkit-tap-highlight-color: transparent;
+}
+
+body.pixel button:focus-visible,
+body.pixel a:focus-visible,
+body.pixel .cartao-acao:focus-visible,
+body.pixel .chat-entrada input:focus-visible {
+  outline: 3px solid #ffd21f;
+  outline-offset: 2px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  body.pixel *,
+  body.pixel *::before,
+  body.pixel *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* ─── Destaque dourado (arcade) ─── */
+body.pixel .fase-etiqueta,
+body.pixel .info-fase,
+body.pixel .hud-box.fase {
+  background: #ffd21f !important;
+  color: #1a1020 !important;
+  box-shadow: 0 0 0 2px #000, 0 0 16px rgba(255, 210, 31, 0.45) !important;
+}
+
+body.pixel .info-dinheiro,
+body.pixel .hud-box.dinheiro {
+  color: #ffd21f !important;
+  text-shadow: 0 0 12px rgba(255, 210, 31, 0.4) !important;
+}
+
+body.pixel .barra,
+body.pixel .metro .barra {
+  box-shadow: inset 0 0 0 2px rgba(0, 0, 0, 0.5), 0 3px 0 rgba(255, 210, 31, 0.28) !important;
 }

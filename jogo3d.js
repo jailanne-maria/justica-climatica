@@ -26,138 +26,6 @@ const floresCores = [0xe74c3c, 0xf1c40f, 0xe67e22, 0x9b59b6, 0xffffff, 0x3498db]
 /* ===== Estilo pixelado (renderiza em baixa resolução e amplia) ===== */
 const ESCALA_PIXEL = 4;
 
-/* ===== Modo VR (Cardboard) ===== */
-let modoVR = false;
-let estereo = null;
-let orientacaoAtual = { yaw: 0, pitch: 0, yawAlvo: 0, pitchAlvo: 0 };
-let joystick = { x: 0, y: 0, cx: 0, cy: 0, r: 52, ativo: false };
-
-function aplicativoPronto() { return typeof firebase !== 'undefined'; }
-
-function detectarDispositivoVR() {
-  return typeof DeviceOrientationEvent !== 'undefined';
-}
-
-function verificarPermissaoGiroscopio() {
-  return pedirPermissaoGiroscopio();
-}
-
-function pedirPermissaoGiroscopio() {
-  return new Promise((resolver) => {
-    if (typeof DeviceOrientationEvent === 'undefined' || !DeviceOrientationEvent.requestPermission) {
-      resolver(true);
-      return;
-    }
-    DeviceOrientationEvent.requestPermission()
-      .then((estado) => resolver(estado === 'granted'))
-      .catch(() => resolver(false));
-  });
-}
-
-function ligarModoVR() {
-  if (!renderizador) return;
-  const botao = document.getElementById('botao-vr');
-  botao.classList.add('ativo');
-  botao.textContent = '✕ Sair do VR';
-
-  modoVR = true;
-  document.body.classList.add('estado-vr');
-
-  if (!estereo) {
-    estereo = new THREE.StereoCamera();
-  }
-
-  const joystickEl = document.getElementById('joystick');
-  joystickEl.hidden = false;
-
-  verificarPermissaoGiroscopio().then((ok) => {
-    if (!ok) orientacaoAtual.yawAlvo = 0;
-  });
-
-  window.addEventListener('deviceorientation', aoGirarMobile);
-
-  camera.updateProjectionMatrix();
-  atualizarHud();
-}
-
-function aoGirarMobile(e) {
-  if (!e.alpha) return;
-  const beta = (e.beta || 0) * Math.PI / 180;
-  const al = (e.gamma || 0) * Math.PI / 180;
-  const yaw = (e.alpha || 0) * Math.PI / 180;
-  orientacaoAtual.yawAlvo = yaw;
-  orientacaoAtual.pitchAlvo = beta;
-}
-
-function desligarModoVR() {
-  modoVR = false;
-  const botao = document.getElementById('botao-vr');
-  botao.classList.remove('ativo');
-  botao.textContent = '🕶️ Modo VR';
-  document.getElementById('joystick').hidden = true;
-  document.getElementById('barra-avancar').hidden = false;
-  document.body.classList.remove('estado-vr');
-}
-
-function ligarJoystick(el) {
-  const raio = el.querySelector('.joystick-raio');
-  const knob = el.querySelector('.joystick-knob');
-  const lim = 44;
-
-  function ao(arr) {
-    const r = raio.getBoundingClientRect();
-    joystick.ativo = true;
-    joystick.cx = r.left + r.width / 2;
-    joystick.cy = r.top + r.height / 2;
-    mover(arr);
-  }
-  function mover(d) {
-    const dx = d.touches ? d.touches[0].clientX - joystick.cx : d.clientX - joystick.cx;
-    const dy = d.touches ? d.touches[0].clientY - joystick.cy : d.clientY - joystick.cy;
-    const ang = Math.atan2(dy, dx);
-    const mag = Math.hypot(dx, dy);
-    const clamp = Math.min(mag, lim);
-    joystick.x = Math.cos(ang) * clamp / lim;
-    joystick.y = Math.sin(ang) * clamp / lim;
-    knob.style.transform = `translate(${joystick.x * lim}px, ${joystick.y * lim}px)`;
-  }
-  function parar() {
-    joystick.ativo = false;
-    joystick.x = 0;
-    joystick.y = 0;
-    knob.style.transform = 'translate(0px, 0px)';
-  }
-
-  if (window.PointerEvent) {
-    raio.addEventListener('pointerdown', ao);
-    raio.addEventListener('pointermove', (e) => { if (joystick.ativo) mover(e); });
-    raio.addEventListener('pointerup', parar);
-    raio.addEventListener('pointercancel', parar);
-  } else {
-    raio.addEventListener('touchstart', ao);
-    raio.addEventListener('touchmove', mover);
-    raio.addEventListener('touchend', parar);
-  }
-}
-
-function moverJogadorVR() {
-  const vel = 0.35;
-  const o = orientacaoAtual;
-  const yaw = o.yaw;
-  const dxJ = joystick.y;
-  const dyJ = -joystick.x;
-
-  const sen = Math.sin(yaw);
-  const cos = Math.cos(yaw);
-  const dx = (sen * dxJ + cos * dyJ);
-  const dz = (cos * dxJ - sen * dyJ);
-  if (Math.hypot(dx, dz) > 0.01) {
-    jogador.position.x = Math.max(-LIMITE_MUNDO, Math.min(LIMITE_MUNDO, jogador.position.x + dx * vel * 1.2));
-    jogador.position.z = Math.max(-LIMITE_MUNDO, Math.min(LIMITE_MUNDO, jogador.position.z + dz * vel * 1.2));
-    jogador.rotation.y = yaw;
-  }
-}
-
 /* ===== Estado e lógica do jogo (reaproveitada) ===== */
 
 const personagens = [
@@ -1079,11 +947,7 @@ function animarPassaros(tempo) {
 function animar() {
   requestAnimationFrame(animar);
 
-  if (modoVR) {
-    moverJogadorVR();
-  } else {
-    moverJogador();
-  }
+  moverJogador();
 
   const tempo = Date.now() * 0.002;
 
@@ -1107,64 +971,17 @@ function animar() {
 
   jogador.position.y = Math.abs(Math.sin(tempo * 3)) * 0.15;
 
-  if (modoVR) {
-    orientacaoAtual.yaw += (orientacaoAtual.yawAlvo - orientacaoAtual.yaw) * 0.2;
-    orientacaoAtual.pitch += (orientacaoAtual.pitchAlvo - orientacaoAtual.pitch) * 0.2;
-    posicionarCameraVR();
-    if (estereo) {
-      estereo.update(camera);
-      renderizarEstereo();
-    } else {
-      renderizador.render(cena, camera);
-    }
-  } else {
-    // Câmera segue o jogador
-    const cx = jogador.position.x + Math.sin(tempo * 0.1) * 0;
-    camera.position.x += (cx - camera.position.x) * 0.08;
-    camera.position.z = jogador.position.z + 24;
-    camera.position.y = 22;
-    camera.lookAt(jogador.position.x, 1, jogador.position.z - 5);
-    if (camera.near !== 0.1) {
-      camera.near = 0.1;
-      camera.far = 500;
-      camera.updateProjectionMatrix();
-    }
-    renderizador.render(cena, camera);
+  const cx = jogador.position.x + Math.sin(tempo * 0.1) * 0;
+  camera.position.x += (cx - camera.position.x) * 0.08;
+  camera.position.z = jogador.position.z + 24;
+  camera.position.y = 22;
+  camera.lookAt(jogador.position.x, 1, jogador.position.z - 5);
+  if (camera.near !== 0.1) {
+    camera.near = 0.1;
+    camera.far = 500;
+    camera.updateProjectionMatrix();
   }
-}
-
-function posicionarCameraVR() {
-  const o = orientacaoAtual;
-  const olhoY = 1.8;
-  const altura = 1.8;
-
-  camera.position.set(jogador.position.x, jogador.position.y + olhoY, jogador.position.z);
-
-  const dirX = Math.sin(o.yaw) * Math.cos(o.pitch);
-  const dirY = Math.sin(o.pitch);
-  const dirZ = Math.cos(o.yaw) * Math.cos(o.pitch);
-
-  camera.up.set(0, 1, 0);
-  camera.lookAt(camera.position.x + dirX, Math.max(0.1, camera.position.y + dirY), camera.position.z + dirZ);
-
-  jogador.rotation.y = o.yaw;
-}
-
-function renderizarEstereo() {
-  const w = renderizador.domElement.width;
-  const h = renderizador.domElement.height;
-
-  renderizador.setScissorTest(true);
-
-  renderizador.setScissor(0, 0, w / 2, h);
-  renderizador.setViewport(0, 0, w / 2, h);
-  renderizador.render(cena, estereo.cameraL);
-
-  renderizador.setScissor(w / 2, 0, w / 2, h);
-  renderizador.setViewport(w / 2, 0, w / 2, h);
-  renderizador.render(cena, estereo.cameraR);
-
-  renderizador.setScissorTest(false);
+  renderizador.render(cena, camera);
 }
 
 /* ===== Eventos de entrada ===== */
@@ -1219,27 +1036,34 @@ document.getElementById('botao-reiniciar').addEventListener('click', () => {
   mostrarHistoria(1);
 });
 
-/* ===== Controles VR ===== */
+function configurarControlesToque() {
+  const controles = document.getElementById('touch-controles');
+  const ehToque = window.matchMedia('(pointer: coarse)').matches || 'ontouchstart' in window;
+  if (!ehToque) return;
 
-document.getElementById('botao-vr').addEventListener('click', async () => {
-  if (modoVR) {
-    desligarModoVR();
-  } else {
-    if (!renderizador || typeof THREE.StereoCamera === 'undefined') {
-      alert('Modo VR requer WebGL. Abra em um navegador com suporte.');
-      return;
-    }
-    const ok = await verificarPermissaoGiroscopio();
-    if (!ok) {
-      alert('Sem acesso ao giroscópio. A permissão foi negada.');
-      return;
-    }
-    orientacaoAtual.yawAlvo = Math.PI;
-    orientacaoAtual.pitchAlvo = 0;
-    ligarModoVR();
-  }
-});
+  controles.hidden = false;
+
+  controles.querySelectorAll('.dpad-btn').forEach((btn) => {
+    const tecla = btn.dataset.tecla;
+    const apertar = () => { teclas[tecla] = true; btn.classList.add('on'); };
+    const soltar = () => { teclas[tecla] = false; btn.classList.remove('on'); };
+
+    btn.addEventListener('touchstart', (e) => { e.preventDefault(); apertar(); }, { passive: false });
+    btn.addEventListener('touchend', soltar);
+    btn.addEventListener('touchcancel', soltar);
+    btn.addEventListener('pointerdown', (e) => { e.preventDefault(); apertar(); });
+    btn.addEventListener('pointerup', soltar);
+    btn.addEventListener('pointercancel', soltar);
+    btn.addEventListener('pointerleave', soltar);
+  });
+
+  document.getElementById('touch-acao').addEventListener('click', () => {
+    if (!document.getElementById('modal-historia').hidden) return;
+    if (document.getElementById('painel-acao').hidden) interagir();
+    else fecharPainelAcao();
+  });
+}
 
 document.addEventListener('DOMContentLoaded', () => {
-  ligarJoystick(document.getElementById('joystick'));
+  configurarControlesToque();
 });

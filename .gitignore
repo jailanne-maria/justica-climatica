@@ -10,3 +10,6 @@ Desktop.ini
 # Temporários
 *.log
 *.tmp
+
+# Versao 2D antiga (backup local, nao publicar)
+_backup-2d/

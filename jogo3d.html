@@ -95,23 +95,32 @@
   <div class="controles-ajuda">
     <span>WASD / setas: mover</span>
     <span>E: interagir</span>
-    <span>Mouse: girar câmera</span>
   </div>
 
-  <div class="barra-vr" id="barra-vr">
-    <button class="botao-vr" id="botao-vr">🕶️ Modo VR</button>
-  </div>
-
-  <div class="joystick" id="joystick" hidden>
-    <div class="joystick-raio">
-      <div class="joystick-knob" id="joystick-knob"></div>
+  <div class="touch-controles" id="touch-controles" hidden>
+    <div class="dpad">
+      <button class="dpad-btn dpad-cima" data-tecla="w" aria-label="Frente">▲</button>
+      <button class="dpad-btn dpad-esq" data-tecla="a" aria-label="Esquerda">◀</button>
+      <button class="dpad-btn dpad-dir" data-tecla="d" aria-label="Direita">▶</button>
+      <button class="dpad-btn dpad-baixo" data-tecla="s" aria-label="Trás">▼</button>
     </div>
+    <button class="touch-acao" id="touch-acao" aria-label="Interagir">E</button>
   </div>
 
   <div class="tela-fim" id="tela-fim" hidden>
     <h2 id="fim-titulo"></h2>
     <p id="fim-mensagem"></p>
     <button class="botao" id="botao-reiniciar">🌱 Plantar de novo</button>
+  </div>
+
+  <div class="girar" id="girar">
+    <div class="girar-logo">
+      <span class="s">RESERVA</span>
+      <span class="f">EM PÉ</span>
+    </div>
+    <div class="girar-telefone" aria-hidden="true"></div>
+    <h2>Gire o celular</h2>
+    <p>Vire o aparelho na horizontal para entrar na floresta.</p>
   </div>
 
   <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
