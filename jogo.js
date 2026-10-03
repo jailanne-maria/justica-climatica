@@ -195,6 +195,7 @@ function vencer() {
   el.telaFim.hidden = false;
   el.fimTitulo.textContent = '🏆 Floresta em pé! Você venceu.';
   el.fimMensagem.textContent = `Maximiano resgatou a princesa Oscarina! Você atravessou as 3 fases com ${pontos} pontos. Os empates, a educação e o voto venceram o desmatamento. Chico Mendes ficaria orgulhoso.`;
+  somVitoria();
 }
 
 function gameOver() {
@@ -208,9 +209,11 @@ function machucar() {
   if (jogador.invencivel) return;
   vidas -= 1;
   if (vidas <= 0) {
+    somDerrota();
     gameOver();
     return;
   }
+  somMachucar();
   jogador.invencivel = true;
   jogador.invTimer = 90;
   reposicionarInicio();
@@ -322,6 +325,7 @@ function pular() {
   if (jogador.noChao) {
     jogador.vy = PULO;
     jogador.noChao = false;
+    somPulo();
   }
 }
 
@@ -708,7 +712,7 @@ const NOTAS = {
   A3: 220.00, B3: 246.94,
   C4: 261.63, D4: 293.66, E4: 329.63, F4: 349.23, G4: 392.00,
   A4: 440.00, B4: 493.88, C5: 523.25, D5: 587.33, E5: 659.25,
-  B5: 987.77, E6: 1318.51
+  B5: 987.77, E6: 1318.51, C6: 1046.50
 };
 
 const MELODIA = [
@@ -812,6 +816,56 @@ function somLatex() {
   g.connect(audioCtx.destination);
   osc.start(agora);
   osc.stop(agora + 0.22);
+}
+
+function somPulo() {
+  if (!garantirAudio()) return;
+  const agora = audioCtx.currentTime;
+  const osc = audioCtx.createOscillator();
+  const g = audioCtx.createGain();
+  osc.type = 'square';
+  osc.frequency.setValueAtTime(300, agora);
+  osc.frequency.exponentialRampToValueAtTime(660, agora + 0.12);
+  g.gain.setValueAtTime(0.0001, agora);
+  g.gain.exponentialRampToValueAtTime(0.15, agora + 0.01);
+  g.gain.exponentialRampToValueAtTime(0.0001, agora + 0.14);
+  osc.connect(g);
+  g.connect(audioCtx.destination);
+  osc.start(agora);
+  osc.stop(agora + 0.15);
+}
+
+function somMachucar() {
+  if (!garantirAudio()) return;
+  const agora = audioCtx.currentTime;
+  const osc = audioCtx.createOscillator();
+  const g = audioCtx.createGain();
+  osc.type = 'sawtooth';
+  osc.frequency.setValueAtTime(220, agora);
+  osc.frequency.exponentialRampToValueAtTime(80, agora + 0.25);
+  g.gain.setValueAtTime(0.0001, agora);
+  g.gain.exponentialRampToValueAtTime(0.18, agora + 0.01);
+  g.gain.exponentialRampToValueAtTime(0.0001, agora + 0.28);
+  osc.connect(g);
+  g.connect(audioCtx.destination);
+  osc.start(agora);
+  osc.stop(agora + 0.3);
+}
+
+function somDerrota() {
+  if (!garantirAudio()) return;
+  const agora = audioCtx.currentTime;
+  [NOTAS.G4, NOTAS.E4, NOTAS.C4].forEach((f, i) => {
+    tocarNota(f, agora + i * 0.18, 0.22, 'triangle', 0.12);
+  });
+}
+
+function somVitoria() {
+  if (!garantirAudio()) return;
+  const agora = audioCtx.currentTime;
+  [NOTAS.C5, NOTAS.E5, NOTAS.G5, NOTAS.C6].forEach((f, i) => {
+    tocarNota(f, agora + i * 0.12, 0.18, 'square', 0.12);
+  });
 }
 
 /* ===== Ligações ===== */
