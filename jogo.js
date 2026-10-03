@@ -160,6 +160,7 @@ function iniciarJogo() {
   el.hud.hidden = false;
   carregarFase(0);
   mostrarIntroFase();
+  iniciarMusica();
 }
 
 function mostrarIntroFase() {
@@ -699,10 +700,90 @@ function reiniciar() {
   iniciarJogo();
 }
 
+/* ===== Música (chiptune via Web Audio) ===== */
+const NOTAS = {
+  C3: 130.81, D3: 146.83, E3: 164.81, F3: 174.61, G3: 196.00,
+  A3: 220.00, B3: 246.94,
+  C4: 261.63, D4: 293.66, E4: 329.63, F4: 349.23, G4: 392.00,
+  A4: 440.00, B4: 493.88, C5: 523.25, D5: 587.33, E5: 659.25
+};
+
+const MELODIA = [
+  ['E4', 1], ['G4', 1], ['A4', 1], ['G4', 1], ['E4', 1], ['G4', 1], ['A4', 1], ['C5', 1],
+  ['D5', 1], ['C5', 1], ['A4', 1], ['G4', 1], ['E4', 1], ['G4', 1], ['A4', 1], ['E4', 1]
+];
+
+const BAIXO = [
+  ['C3', 2], ['G3', 2], ['A3', 2], ['G3', 2], ['C3', 2], ['G3', 2], ['F3', 2], ['G3', 2]
+];
+
+let audioCtx = null;
+let musicaLigada = false;
+let indiceMelodia = 0;
+let proximoTempo = 0;
+let timerMusica = null;
+const BPM = 132;
+const SEG_BATIDA = 60 / BPM;
+
+function tocarNota(freq, quando, dur, tipo, volume) {
+  const osc = audioCtx.createOscillator();
+  const g = audioCtx.createGain();
+  osc.type = tipo;
+  osc.frequency.setValueAtTime(freq, quando);
+  g.gain.setValueAtTime(0.0001, quando);
+  g.gain.exponentialRampToValueAtTime(volume, quando + 0.01);
+  g.gain.exponentialRampToValueAtTime(0.0001, quando + dur);
+  osc.connect(g);
+  g.connect(audioCtx.destination);
+  osc.start(quando);
+  osc.stop(quando + dur + 0.02);
+}
+
+function agendarNotas() {
+  while (proximoTempo < audioCtx.currentTime + 0.3) {
+    const [notaM, durM] = MELODIA[indiceMelodia % MELODIA.length];
+    tocarNota(NOTAS[notaM], proximoTempo, durM * SEG_BATIDA, 'square', 0.08);
+    if (indiceMelodia % 2 === 0) {
+      const iB = Math.floor(indiceMelodia / 2) % BAIXO.length;
+      tocarNota(NOTAS[BAIXO[iB][0]], proximoTempo, 2 * SEG_BATIDA, 'triangle', 0.13);
+    }
+    proximoTempo += durM * SEG_BATIDA;
+    indiceMelodia += 1;
+  }
+}
+
+function iniciarMusica() {
+  if (musicaLigada) return;
+  const AC = window.AudioContext || window.webkitAudioContext;
+  if (!AC) return;
+  if (!audioCtx) audioCtx = new AC();
+  if (audioCtx.state === 'suspended') audioCtx.resume();
+  musicaLigada = true;
+  indiceMelodia = 0;
+  proximoTempo = audioCtx.currentTime + 0.05;
+  timerMusica = setInterval(agendarNotas, 120);
+  document.getElementById('botao-som').textContent = '🔊';
+}
+
+function pararMusica() {
+  musicaLigada = false;
+  if (timerMusica) { clearInterval(timerMusica); timerMusica = null; }
+}
+
+function alternarMusica() {
+  if (musicaLigada) {
+    pararMusica();
+    document.getElementById('botao-som').textContent = '🔇';
+  } else {
+    iniciarMusica();
+  }
+}
+
 /* ===== Ligações ===== */
 document.getElementById('botao-iniciar').addEventListener('click', iniciarJogo);
 document.getElementById('botao-continuar').addEventListener('click', continuarFase);
 document.getElementById('botao-reiniciar').addEventListener('click', reiniciar);
+document.getElementById('botao-som').addEventListener('click', alternarMusica);
 
 configurarTouch();
 atualizarHud();
