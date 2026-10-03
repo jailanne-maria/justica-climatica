@@ -6,7 +6,7 @@ const ALTURA = 270;
 const CHAO_Y = 232;
 const LARGURA_MUNDO = 2400;
 
-const GRAV = 0.55;
+const GRAV = 0.5;
 const PULO = -11;
 const VEL = 2.4;
 const PJ_L = 22;
