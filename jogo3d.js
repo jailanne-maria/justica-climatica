@@ -13,6 +13,7 @@ let passaros = [];
 
 const teclas = {};
 const raioInteracao = 4.5;
+let controlesTouchAtivos = false;
 
 const LIMITE_MUNDO = 58;
 
@@ -790,10 +791,35 @@ function abrirPainelAcao(dados) {
   });
 
   painel.hidden = false;
+  atualizarBotaoAcao();
 }
 
 function fecharPainelAcao() {
   document.getElementById('painel-acao').hidden = true;
+  atualizarBotaoAcao();
+}
+
+function atualizarBotaoAcao() {
+  if (!controlesTouchAtivos || !jogador) return;
+  const botao = document.getElementById('touch-acao');
+  const painelAberto = !document.getElementById('painel-acao').hidden;
+  const modalAberto = !document.getElementById('modal-historia').hidden;
+
+  let visivel = false;
+  let texto = '💬';
+  let rotulo = 'Falar';
+
+  if (painelAberto) {
+    visivel = true;
+    texto = '✕';
+    rotulo = 'Fechar';
+  } else if (!modalAberto && encontrarProximo()) {
+    visivel = true;
+  }
+
+  botao.classList.toggle('visivel', visivel);
+  botao.textContent = texto;
+  botao.setAttribute('aria-label', rotulo);
 }
 
 /* ===== Rodar ano ===== */
@@ -847,6 +873,7 @@ function verificarDerrota() {
 function finalizar(venceu) {
   const tela = document.getElementById('tela-fim');
   tela.hidden = false;
+  document.getElementById('touch-controles').hidden = true;
 
   const media = (estado.extrativista + estado.ribeirinho + estado.urbano) / 3;
   const vitoria = venceu !== false && estado.floresta >= 50 && media >= 40;
@@ -909,8 +936,17 @@ function moverJogador() {
       anel.material.opacity = dados.id === proximo.id ? 1 : 0;
     });
   }
-  document.getElementById('hud-aviso').hidden = !proximo;
+  const aviso = document.getElementById('hud-aviso');
+  if (proximo) {
+    aviso.innerHTML = controlesTouchAtivos
+      ? '<strong>💬</strong> Toque no botão para falar'
+      : 'Pressione <strong>E</strong> para falar';
+    aviso.hidden = false;
+  } else {
+    aviso.hidden = true;
+  }
   interacaoAtual = proximo;
+  atualizarBotaoAcao();
 }
 
 /* ===== Loop de animação ===== */
@@ -1012,6 +1048,7 @@ function comecar() {
   document.getElementById('painel-log').hidden = false;
   document.getElementById('barra-avancar').hidden = false;
   iniciar3D();
+  if (controlesTouchAtivos) document.getElementById('touch-controles').hidden = false;
   mostrarHistoria(1);
 }
 
@@ -1041,7 +1078,7 @@ function configurarControlesToque() {
   const ehToque = window.matchMedia('(pointer: coarse)').matches || 'ontouchstart' in window;
   if (!ehToque) return;
 
-  controles.hidden = false;
+  controlesTouchAtivos = true;
 
   controles.querySelectorAll('.dpad-btn').forEach((btn) => {
     const tecla = btn.dataset.tecla;

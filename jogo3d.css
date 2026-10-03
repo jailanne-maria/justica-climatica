@@ -562,6 +562,13 @@ canvas {
   pointer-events: auto;
   touch-action: manipulation;
   box-shadow: 0 5px 0 rgba(0, 0, 0, 0.4);
+  display: none;
+  align-items: center;
+  justify-content: center;
+}
+
+.touch-acao.visivel {
+  display: flex;
 }
 
 .touch-acao:active {
