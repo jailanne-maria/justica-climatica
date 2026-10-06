@@ -508,28 +508,15 @@ function desenhar() {
 
   // céu
   const grad = ctx.createLinearGradient(0, 0, 0, ALTURA);
-  grad.addColorStop(0, f.ceu);
-  grad.addColorStop(1, '#d6f0c0');
+  grad.addColorStop(0, '#2b6fc0');
+  grad.addColorStop(0.5, f.ceu);
+  grad.addColorStop(1, '#f4e9c0');
   ctx.fillStyle = grad;
   ctx.fillRect(0, 0, LARGURA, ALTURA);
 
-  // sol
-  ctx.fillStyle = '#fff3b0';
-  ctx.fillRect(400, 26, 26, 26);
-
+  desenharSol();
   desenharNuvens();
-
-  // colinas distantes (parallax)
-  ctx.fillStyle = f.colina;
-  for (let i = 0; i < 6; i++) {
-    const cx = i * 180 - (cameraX * 0.3) % 180;
-    ctx.beginPath();
-    ctx.moveTo(cx - 90, ALTURA);
-    ctx.lineTo(cx, 120 + (i % 2) * 30);
-    ctx.lineTo(cx + 90, ALTURA);
-    ctx.closePath();
-    ctx.fill();
-  }
+  desenharMontanhas();
 
   desenharArvores();
   desenharPlataformas();
@@ -543,15 +530,73 @@ function desenhar() {
   desenharPromptLatex();
 }
 
+function desenharSol() {
+  const x = 404, y = 32, r = 14;
+  ctx.fillStyle = 'rgba(255, 240, 160, 0.3)';
+  ctx.fillRect(x - 24, y - 24, 48, 48);
+  ctx.fillStyle = 'rgba(255, 240, 160, 0.45)';
+  ctx.fillRect(x - 18, y - 18, 36, 36);
+  ctx.fillStyle = '#fff3b0';
+  ctx.fillRect(x - r, y - r, r * 2, r * 2);
+  ctx.fillStyle = '#ffd21f';
+  ctx.fillRect(x - r + 3, y - r + 3, r * 2 - 6, r * 2 - 6);
+}
+
+function desenharMontanhas() {
+  const f = FASES[faseAtual];
+
+  // montanhas distantes
+  const off1 = cameraX * 0.2;
+  const p1 = Math.floor(off1 / 240) - 1;
+  ctx.fillStyle = '#a7c6e0';
+  for (let i = p1; i < p1 + 5; i++) {
+    const cx = i * 240 - off1;
+    const topo = 70 + (((i % 2) + 2) % 2) * 26;
+    ctx.beginPath();
+    ctx.moveTo(cx - 120, ALTURA);
+    ctx.lineTo(cx, topo);
+    ctx.lineTo(cx + 120, ALTURA);
+    ctx.closePath();
+    ctx.fill();
+    ctx.fillStyle = '#cfe4f2';
+    ctx.fillRect(cx - 2, topo - 2, 4, 4);
+    ctx.fillStyle = '#a7c6e0';
+  }
+
+  // colinas verdes
+  const off2 = cameraX * 0.35;
+  const p2 = Math.floor(off2 / 180) - 1;
+  for (let i = p2; i < p2 + 6; i++) {
+    const cx = i * 180 - off2;
+    const topo = 150 + (((i % 2) + 2) % 2) * 25;
+    ctx.fillStyle = f.colina;
+    ctx.beginPath();
+    ctx.moveTo(cx - 90, ALTURA);
+    ctx.lineTo(cx, topo);
+    ctx.lineTo(cx + 90, ALTURA);
+    ctx.closePath();
+    ctx.fill();
+  }
+}
+
 function desenharNuvens() {
   const desloca = (Date.now() * 0.01 + cameraX * 0.2) % 900;
   for (let i = 0; i < 6; i++) {
     const cx = ((i * 160 - desloca) % 900 + 900) % 900 - 80;
-    const cy = 22 + (i % 3) * 26;
+    const cy = 24 + (i % 3) * 28;
+    // sombra
+    ctx.fillStyle = '#d8e6f0';
+    ctx.fillRect(cx, cy + 3, 38, 8);
+    ctx.fillRect(cx + 8, cy - 5, 20, 8);
+    ctx.fillRect(cx + 4, cy - 1, 30, 6);
+    // corpo
     ctx.fillStyle = '#ffffff';
-    ctx.fillRect(cx, cy, 38, 10);
+    ctx.fillRect(cx, cy, 38, 8);
     ctx.fillRect(cx + 8, cy - 8, 20, 8);
     ctx.fillRect(cx + 4, cy - 4, 30, 6);
+    // brilho
+    ctx.fillStyle = '#f7fbff';
+    ctx.fillRect(cx + 4, cy - 6, 22, 4);
   }
 }
 
@@ -583,26 +628,39 @@ function desenharPromptLatex() {
 
 function desenharArvores() {
   const offset = cameraX * 0.45;
-  const espaco = 44;
+  const espaco = 46;
   const primeiro = Math.floor(offset / espaco) - 1;
   for (let i = primeiro; i < primeiro + 14; i++) {
     const semente = (i * 2654435761) >>> 0;
-    const x = i * espaco - offset + (semente % 20) - 10;
-    const altura = 44 + (semente % 5) * 9;
-    const largura = 20 + (semente % 3) * 5;
+    const x = i * espaco - offset + (semente % 22) - 11;
+    const altura = 46 + (semente % 5) * 9;
+    const largura = 22 + (semente % 3) * 5;
     const topo = ALTURA - altura;
+    const cx = x + largura / 2;
 
-    // tronco
+    // tronco com sombra
     ctx.fillStyle = '#3a2513';
-    ctx.fillRect(x + largura / 2 - 2, topo, 4, altura);
+    ctx.fillRect(cx, topo, 5, altura);
+    ctx.fillStyle = '#5b3a1e';
+    ctx.fillRect(cx, topo, 3, altura);
 
-    // copa em camadas
+    // contorno da copa
+    ctx.fillStyle = '#12351c';
+    ctx.fillRect(x - 1, topo - 13, largura + 2, 14);
+    ctx.fillRect(x + 3, topo - 23, largura - 6, 11);
+    ctx.fillRect(x + 6, topo - 31, largura - 12, 8);
+
+    // copa
     ctx.fillStyle = '#1e4a28';
     ctx.fillRect(x, topo - 12, largura, 12);
     ctx.fillStyle = '#2a6133';
     ctx.fillRect(x + 4, topo - 22, largura - 8, 10);
     ctx.fillStyle = '#357a3e';
     ctx.fillRect(x + 7, topo - 30, largura - 14, 8);
+
+    // brilho
+    ctx.fillStyle = '#4f9a57';
+    ctx.fillRect(x + 4, topo - 20, 7, 4);
   }
 }
 
@@ -612,11 +670,29 @@ function desenharPlataformas() {
     // terra
     ctx.fillStyle = '#6b4a2b';
     ctx.fillRect(x, plat.y, plat.w, plat.h);
-    // grama (topo)
-    ctx.fillStyle = '#3fae58';
-    ctx.fillRect(x, plat.y, plat.w, 6);
+    // manchas de terra
+    ctx.fillStyle = '#5a3d22';
+    const semente = (plat.x * 2654435761) >>> 0;
+    for (let i = 0; i < plat.w / 24; i++) {
+      const px = x + 8 + i * 24 + (semente % 8);
+      const py = plat.y + 16 + ((semente + i * 13) % 12);
+      ctx.fillRect(px, py, 5, 3);
+    }
+    // sombra inferior
+    ctx.fillStyle = '#4a3018';
+    ctx.fillRect(x, plat.y + plat.h - 4, plat.w, 4);
+    // grama
     ctx.fillStyle = '#2f7a3d';
-    ctx.fillRect(x, plat.y + 6, plat.w, 2);
+    ctx.fillRect(x, plat.y, plat.w, 6);
+    ctx.fillStyle = '#3fae58';
+    ctx.fillRect(x, plat.y, plat.w, 3);
+    ctx.fillStyle = '#5cc06a';
+    ctx.fillRect(x, plat.y, plat.w, 1);
+    // tufos de grama
+    ctx.fillStyle = '#2f7a3d';
+    for (let i = 0; i < plat.w / 8; i++) {
+      ctx.fillRect(x + 3 + i * 8, plat.y + 4, 3, 2);
+    }
   }
 }
 
@@ -634,12 +710,16 @@ function desenharColetaveis() {
 function desenharMoeda(cx, cy, escala) {
   const r = 7;
   const w = Math.max(1, Math.round(r * (0.25 + escala * 0.75)));
+  ctx.fillStyle = '#8a5a00';
+  ctx.fillRect(cx - w - 1, cy - r - 1, w * 2 + 2, r * 2 + 2);
   ctx.fillStyle = '#c89400';
   ctx.fillRect(cx - w, cy - r, w * 2, r * 2);
   ctx.fillStyle = '#ffd21f';
   ctx.fillRect(cx - w + 1, cy - r + 1, w * 2 - 2, r * 2 - 2);
+  ctx.fillStyle = '#ffe98a';
+  ctx.fillRect(cx - Math.max(1, w - 2), cy - r + 2, Math.max(1, (w - 2) * 2), 2);
   ctx.fillStyle = '#fff3b0';
-  ctx.fillRect(cx - Math.max(1, w - 1), cy - 2, Math.max(1, (w - 1) * 2), 2);
+  ctx.fillRect(cx - Math.max(1, w - 1), cy - 3, Math.max(1, (w - 1) * 2), 2);
 }
 
 function desenharSeringueiras() {
@@ -684,12 +764,18 @@ function desenharFeedbacks() {
 }
 
 function desenharFogos() {
-  ctx.font = '20px sans-serif';
-  ctx.textAlign = 'center';
-  ctx.textBaseline = 'middle';
   for (const fg of fogos) {
+    const cx = fg.x - cameraX + 10;
+    const base = fg.y + 22;
     const fl = Math.sin(Date.now() * 0.02 + fg.x) * 2;
-    ctx.fillText('🔥', fg.x - cameraX + 10, fg.y + 11 + fl * 0.4);
+    ctx.fillStyle = 'rgba(255, 160, 40, 0.3)';
+    ctx.fillRect(cx - 10, base - 24 - fl, 20, 24);
+    ctx.fillStyle = '#ff7a1a';
+    ctx.fillRect(cx - 7, base - 18 - fl, 14, 18);
+    ctx.fillStyle = '#ffd21f';
+    ctx.fillRect(cx - 4, base - 12 - fl, 8, 12);
+    ctx.fillStyle = '#fff3b0';
+    ctx.fillRect(cx - 2, base - 6 - fl, 4, 6);
   }
 }
 
@@ -720,58 +806,92 @@ function desenharObjetivo() {
   ctx.fillRect(x + 3, base - 40, 18, 6);
 }
 
+function coresDoPersonagem(nome) {
+  const mapa = {
+    'Raimundo': { camisa: '#c89450', camisaEsc: '#9c6a2f', calca: '#5b3a1e', gorro: '#7a4a22' },
+    'Antônio': { camisa: '#5a7a3a', camisaEsc: '#3f5a28', calca: '#3a3a3a', gorro: '#4a5a2a' },
+    'Rosa': { camisa: '#d94f8c', camisaEsc: '#a8356a', calca: '#4a3a6a', gorro: '#8c3f6a' }
+  };
+  return mapa[nome] || mapa['Raimundo'];
+}
+
 function desenharJogador() {
   const p = jogador;
   if (p.invencivel && Math.floor(Date.now() / 100) % 2 === 0) return;
   const x = Math.round(p.x - cameraX);
   const y = Math.round(p.y);
+  const c = coresDoPersonagem(FASES[faseAtual].personagem);
+  const dir = p.olhandoDir;
+  const OUT = '#1a0c08';
+  const passo = p.noChao && p.vx !== 0 ? Math.floor(Date.now() / 120) % 2 : 0;
 
-  // macacão azul (pernas)
-  ctx.fillStyle = '#2449c9';
-  ctx.fillRect(x + 4, y + 21, 6, 9);
-  ctx.fillRect(x + 12, y + 21, 6, 9);
-  // sapatos
+  // pernas
+  ctx.fillStyle = OUT;
+  ctx.fillRect(x + 4, y + 21, 7, 9);
+  ctx.fillRect(x + 11, y + 21, 7, 9);
+  ctx.fillStyle = c.calca;
+  ctx.fillRect(x + 5, y + 21, 6, 8);
+  ctx.fillRect(x + 12, y + 21, 6, 8);
+
+  // botas
+  ctx.fillStyle = OUT;
+  ctx.fillRect(x + 4 + (passo ? 2 : 0), y + 27, 8, 3);
+  ctx.fillRect(x + 11 - (passo ? 2 : 0), y + 27, 8, 3);
   ctx.fillStyle = '#6b4a2b';
-  ctx.fillRect(x + 4, y + 27, 6, 3);
-  ctx.fillRect(x + 12, y + 27, 6, 3);
+  ctx.fillRect(x + 5 + (passo ? 2 : 0), y + 27, 6, 3);
+  ctx.fillRect(x + 12 - (passo ? 2 : 0), y + 27, 6, 3);
 
-  // camisa vermelha
-  ctx.fillStyle = '#e8412c';
-  ctx.fillRect(x + 3, y + 10, 16, 13);
+  // torso
+  ctx.fillStyle = OUT;
+  ctx.fillRect(x + 2, y + 9, 18, 14);
+  ctx.fillStyle = c.camisa;
+  ctx.fillRect(x + 3, y + 10, 16, 12);
+  ctx.fillStyle = c.camisaEsc;
+  ctx.fillRect(x + 3, y + 18, 16, 3);
 
   // braço + mão
-  ctx.fillStyle = '#e8412c';
-  ctx.fillRect(p.olhandoDir > 0 ? x + 17 : x - 1, y + 11, 3, 7);
+  ctx.fillStyle = OUT;
+  ctx.fillRect(dir > 0 ? x + 16 : x + 2, y + 11, 4, 8);
+  ctx.fillStyle = c.camisa;
+  ctx.fillRect(dir > 0 ? x + 17 : x + 3, y + 11, 3, 7);
   ctx.fillStyle = '#e8b882';
-  ctx.fillRect(p.olhandoDir > 0 ? x + 17 : x - 1, y + 17, 3, 3);
+  ctx.fillRect(dir > 0 ? x + 17 : x + 3, y + 16, 3, 3);
 
   // cabeça
+  ctx.fillStyle = OUT;
+  ctx.fillRect(x + 4, y - 1, 14, 13);
   ctx.fillStyle = '#e8b882';
   ctx.fillRect(x + 5, y, 12, 11);
 
-  // boné vermelho
-  ctx.fillStyle = '#e8412c';
-  ctx.fillRect(x + 3, y, 16, 4);
-  ctx.fillRect(x + 5, y - 2, 12, 3);
-
-  // poronga (lâmpada de cabeça dos seringueiros)
+  // cabelo
   ctx.fillStyle = '#5b3a1e';
-  ctx.fillRect(x + 3, y - 5, 16, 3);
-  ctx.fillStyle = '#c89450';
-  ctx.fillRect(x + 7, y - 10, 7, 6);
-  ctx.fillStyle = '#fff3b0';
-  ctx.fillRect(x + 8, y - 9, 4, 2);
-  const fl = Math.floor(Date.now() / 140) % 3;
-  ctx.fillStyle = '#ff9f1a';
-  ctx.fillRect(x + 9, y - 12 - fl, 2, 3);
-  ctx.fillStyle = '#ffd21f';
-  ctx.fillRect(x + 10, y - 11 - fl, 1, 2);
+  ctx.fillRect(x + 5, y, 12, 3);
+
+  // gorro/boné
+  ctx.fillStyle = c.gorro;
+  ctx.fillRect(x + 3, y - 2, 16, 4);
+  ctx.fillRect(x + 5, y - 4, 12, 3);
 
   // olho
+  ctx.fillStyle = '#ffffff';
+  ctx.fillRect(dir > 0 ? x + 13 : x + 6, y + 4, 3, 3);
   ctx.fillStyle = '#1d3320';
-  ctx.fillRect(p.olhandoDir > 0 ? x + 13 : x + 6, y + 5, 3, 3);
+  ctx.fillRect(dir > 0 ? x + 14 : x + 6, y + 5, 2, 2);
 
-  desenharRotulo(x + 11, y - 20, FASES[faseAtual].personagem.toUpperCase());
+  // poronga (lâmpada de cabeça dos seringueiros)
+  ctx.fillStyle = '#3a2513';
+  ctx.fillRect(x + 2, y - 6, 18, 3);
+  ctx.fillStyle = '#c89450';
+  ctx.fillRect(x + 7, y - 11, 7, 6);
+  ctx.fillStyle = '#fff3b0';
+  ctx.fillRect(x + 8, y - 10, 4, 2);
+  const fl = Math.floor(Date.now() / 140) % 3;
+  ctx.fillStyle = '#ff9f1a';
+  ctx.fillRect(x + 9, y - 13 - fl, 2, 3);
+  ctx.fillStyle = '#ffd21f';
+  ctx.fillRect(x + 10, y - 12 - fl, 1, 2);
+
+  desenharRotulo(x + 11, y - 22, FASES[faseAtual].personagem.toUpperCase());
 }
 
 function loop() {
