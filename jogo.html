@@ -3,8 +3,8 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-  <meta name="description" content="Reserva em Pé: plataforma 2D onde você corre, pula e protege a floresta do Acre em 3 fases.">
-  <title>Reserva em Pé</title>
+  <meta name="description" content="Caminhos da Seringa: plataforma 2D sobre a história dos seringueiros do Acre, em 8 fases.">
+  <title>Caminhos da Seringa</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=VT323&display=swap">
@@ -24,39 +24,20 @@
 
       <div class="overlay overlay-centro" id="tela-inicio">
         <div class="logo">
-          <span class="s">RESERVA</span>
-          <span class="f">EM PÉ</span>
+          <span class="s">CAMINHOS DA</span>
+          <span class="f">SERINGA</span>
         </div>
-        <p class="legenda">Corra, pule e ajude a manter a floresta do Acre em pé.</p>
-        <button class="botao" id="botao-iniciar">🌱 Entrar na floresta</button>
+        <p class="legenda">Uma história do Acre: trabalho, território e a luta pela floresta.</p>
+        <button class="botao" id="botao-iniciar">🌱 Começar a jornada</button>
       </div>
 
       <div class="overlay overlay-mapa" id="tela-mapa" hidden>
-        <div class="mapa-titulo">Mapa da Floresta</div>
-        <div class="mapa">
-          <svg class="mapa-caminho" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true">
-            <path d="M 18 76 Q 50 4 50 16 Q 50 4 82 76" />
-          </svg>
-          <button class="nodo" id="nodo-0">
-            <span class="nodo-emoji">🌱</span>
-            <span class="nodo-nome">Resistir</span>
-            <span class="cadeado">🔒</span>
-          </button>
-          <button class="nodo" id="nodo-1">
-            <span class="nodo-emoji">🌳</span>
-            <span class="nodo-nome">Construir</span>
-            <span class="cadeado">🔒</span>
-          </button>
-          <button class="nodo" id="nodo-2">
-            <span class="nodo-emoji">🏛️</span>
-            <span class="nodo-nome">Consolidar</span>
-            <span class="cadeado">🔒</span>
-          </button>
-        </div>
+        <div class="mapa-titulo">Mapa das fases</div>
+        <div class="mapa" id="mapa"></div>
       </div>
 
       <div class="overlay overlay-cartao" id="tela-fase" hidden>
-        <span class="tag" id="fase-etiqueta">Fase 1 · Resistir</span>
+        <span class="tag" id="fase-etiqueta">Fase 1</span>
         <h2 id="fase-titulo"></h2>
         <p class="txt" id="fase-texto"></p>
         <p class="fato"><strong>Fato:</strong> <span id="fase-fato"></span></p>
@@ -67,7 +48,13 @@
       <div class="overlay overlay-centro" id="tela-fim" hidden>
         <h2 id="fim-titulo"></h2>
         <p class="txt" id="fim-mensagem"></p>
-        <button class="botao" id="botao-reiniciar">🌱 Plantar de novo</button>
+        <button class="botao" id="botao-reiniciar">🌱 Recomeçar</button>
+      </div>
+
+      <div class="overlay overlay-caderno" id="tela-caderno" hidden>
+        <div class="mapa-titulo">Caderno da Memória</div>
+        <div class="caderno" id="caderno-lista"></div>
+        <button class="botao" id="botao-caderno-fechar">Fechar</button>
       </div>
     </div>
   </div>
@@ -85,8 +72,8 @@
 
   <div class="girar" id="girar">
     <div class="girar-logo">
-      <span class="s">RESERVA</span>
-      <span class="f">EM PÉ</span>
+      <span class="s">CAMINHOS DA</span>
+      <span class="f">SERINGA</span>
     </div>
     <div class="girar-telefone" aria-hidden="true"></div>
     <div class="girar-titulo">Gire o celular</div>
@@ -94,6 +81,7 @@
   </div>
 
   <button class="botao-som" id="botao-som" aria-label="Ligar música">🔇</button>
+  <button class="botao-som botao-caderno" id="botao-caderno" aria-label="Caderno da Memória">📓</button>
 
   <script src="jogo.js"></script>
 </body>

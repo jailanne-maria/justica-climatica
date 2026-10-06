@@ -1,39 +1,47 @@
-# Reserva em Pé — Justiça Climática
+# Caminhos da Seringa — uma história do Acre
 
-Site educativo sobre justiça climática no Acre, com o jogo **"Reserva em Pé"**, um plataforma 2D onde você corre, pula e protege a floresta.
+Jogo de plataforma 2D inspirado na dinâmica de Super Mario World, que conta a história dos seringueiros do Acre em **8 fases, divididas em 4 capítulos**.
 
 🔗 **Jogar:** https://jailanne-maria.github.io/justica-climatica/jogo.html
 
 ## O que tem aqui
 
 - **index.html** — site explicativo (justiça climática, El Niño, CadÚnico, Rio Branco)
-- **jogo.html / jogo.js / jogo.css** — o jogo (plataforma 2D em 3 fases)
+- **jogo.html / jogo.js / jogo.css** — o jogo (plataforma 2D, 8 fases)
 - **sobre.html** — página sobre o projeto
 - **pixel.css** — tema retrô/pixel-art compartilhado
 - **_backup-2d/** e **_backup-3d/** — versões antigas (não publicadas)
 
-## Sobre o jogo
+## Os 4 capítulos
 
-Um plataforma 2D em **3 fases**, cada uma contando uma etapa da luta pela floresta:
+| Capítulo | Fases | Personagem | Período |
+|---|---|---|---|
+| 1 · O ciclo da borracha | 1–2 | Raimundo | Fim do século XIX |
+| 2 · Trabalho e dívida | 3–4 | Raimundo | Primeiro ciclo |
+| 3 · Guerra e resistência | 5–6 | Antônio / Rosa | WWII e 1970 |
+| 4 · Empate e floresta em pé | 7–8 | Rosa | 1970–1990 |
 
-| Fase | Tema | O que você faz |
-|---|---|---|
-| 1 · Resistir | O empate e Chico Mendes | Pule obstáculos e colete castanhas |
-| 2 · Construir | A Reserva Extrativista | Fuja do gado que avança sobre a mata |
-| 3 · Consolidar | Marina Silva e as lideranças | Atravesse o desafio final e vença |
+Cada fase reúne um **registro no Caderno da Memória** sobre trabalho, exploração, resistência e conquistas coletivas.
 
-Controles: **setas / A-D** para andar, **espaço / W** para pular (ou **D-pad + botão A** no celular).
+## Controles
+
+- **Setas / A-D** — caminhar
+- **Espaço / W** — pular
+- **E** — extrair látex (perto da seringueira)
+- **C** — abrir o Caderno da Memória
+- No celular: D-pad + botões **A** (pular) e **B** (extrair látex)
+
+## Fontes e cuidados
+
+As falas e personagens são **fictícios**; os acontecimentos históricos são identificados no jogo. Base: Museu da Borracha (Governo do Acre), Seplan, e o Decreto nº 99.144/1990 (Resex Chico Mendes).
 
 ## Como rodar localmente
 
-Abra o `index.html` (ou `jogo.html`) no navegador — roda 100% no browser, sem servidor.
+Abra o `jogo.html` no navegador — roda 100% no browser, sem servidor.
 
 ## Tecnologias
 
 - HTML5 Canvas
 - CSS e JavaScript puro
-- Controles de toque para mobile (D-pad + botão de pulo)
-
-## Por que este projeto
-
-Nascido para comunicar justiça climática de forma lúdica e acessível, conectando a realidade do Acre (cheias, queimadas, extrativismo) à lógica de um jogo — transformar aprendizado em experiência.
+- Web Audio (música e efeitos gerados em tempo real)
+- Controles de toque para mobile

@@ -1,4 +1,4 @@
-/* ===== Reserva em Pé — plataforma 2D ===== */
+/* ===== Caminhos da Seringa — plataforma 2D ===== */
 const canvas = document.getElementById('tela');
 const ctx = canvas.getContext('2d');
 const LARGURA = 480;
@@ -12,85 +12,153 @@ const VEL = 2.4;
 const PJ_L = 22;
 const PJ_A = 30;
 
-/* ===== Níveis (3 fases) ===== */
+/* ===== Layouts reutilizáveis ===== */
+const CHAO_EASY = [[0, 820], [900, 780], [1720, 680]];
+const PLAT_EASY = [[830, 180, 90], [1690, 185, 90]];
+const CHAO_MED = [[0, 640], [720, 600], [1400, 600], [2080, 320]];
+const PLAT_MED = [[650, 180, 90], [1330, 175, 90], [2010, 180, 100]];
+const CHAO_HARD = [[0, 520], [600, 500], [1180, 480], [1740, 500], [2280, 120]];
+const PLAT_HARD = [[530, 180, 90], [1110, 175, 90], [1670, 180, 90], [2250, 185, 80]];
+
+function distribuirMoedas(chao) {
+  const moedas = [];
+  for (const [x, w] of chao) {
+    for (let i = 1; i <= 3; i++) {
+      moedas.push([x + (w * i) / 4, 198]);
+    }
+  }
+  return moedas;
+}
+
+function distribuirSeringueiras(chao) {
+  return chao.map(([x, w]) => x + Math.floor(w / 2));
+}
+
+/* ===== Níveis (8 fases em 4 capítulos) ===== */
 const FASES = [
   {
-    nome: 'Fase 1 · Resistir',
-    titulo: 'O empate: a arma dos que amam a floresta',
-    texto: 'Nos anos 1980, os seringueiros do Acre criaram o "empate": famílias inteiras sentavam-se diante das motosserras para impedir a derrubada. Chico Mendes liderou essa resistência pacífica. Atravesse a floresta coletando moedas e extraia látex das seringueiras — a mata em pé paga a conta.',
-    fato: 'O "empate" parou o desmatamento sem violência.',
-    fonte: 'Memória dos empates · Acre',
-    ceu: '#7ec8ff',
-    colina: '#2f7a3d',
-    chao: [[0, 820], [900, 780], [1720, 680]],
-    plataformas: [[830, 180, 90], [1690, 185, 90]],
-    coletaveis: [
-      [180, 200], [320, 190], [480, 200], [620, 180], [760, 200],
-      [980, 170], [1120, 200], [1260, 180], [1400, 200], [1560, 170],
-      [1780, 200], [1920, 180], [2060, 200], [2200, 180]
-    ],
-    fogos: [[1150], [1900]],
-    gados: [],
-    seringueiras: [500, 1300, 2050],
-    inicio: [60, 200],
-    fim: [2320, 200]
+    nome: 'Fase 1', curto: 'Chegada', emoji: '🌱', capitulo: 'O ciclo da borracha',
+    personagem: 'Raimundo', registro: 'O território',
+    titulo: 'Uma floresta com muitas histórias',
+    texto: 'Final do século XIX. Raimundo, migrante nordestino, chega ao Acre procurando trabalho. Mas esta floresta já era habitada por povos indígenas muito antes dos seringais. Siga a trilha até a moradia e recolha as pistas sobre o território.',
+    fato: 'A expansão dos seringais envolveu expulsões e violências contra povos indígenas.',
+    fonte: 'Museu da Borracha · Governo do Acre',
+    ceu: '#7ec8ff', colina: '#2f7a3d',
+    chao: CHAO_EASY, plataformas: PLAT_EASY, fogos: [], gados: [],
+    inicio: [60, 200], fim: [2320, 200]
   },
   {
-    nome: 'Fase 2 · Construir',
-    titulo: 'A Reserva Extrativista',
-    texto: 'Em 1990 o Brasil criou a primeira Reserva Extrativista, no Acre, em homenagem a Chico Mendes. Ali, castanha, borracha e açaí são colhidos com a floresta em pé. Cuidado com o gado que avança sobre a mata!',
-    fato: 'A floresta em pé gera renda sem derrubar uma árvore.',
-    fonte: 'Resex Chico Mendes · Acre',
-    ceu: '#8fd0ff',
-    colina: '#3a8a45',
-    chao: [[0, 640], [720, 600], [1400, 600], [2080, 320]],
-    plataformas: [[650, 180, 90], [1330, 175, 90], [2010, 180, 100]],
-    coletaveis: [
-      [160, 200], [320, 180], [500, 200], [760, 170], [900, 200],
-      [1060, 180], [1200, 200], [1450, 170], [1600, 200], [1750, 180],
-      [1880, 200], [2140, 170], [2260, 200]
-    ],
-    fogos: [[1700]],
-    gados: [
+    nome: 'Fase 2', curto: 'Seringa', emoji: '🔦', capitulo: 'O ciclo da borracha',
+    personagem: 'Raimundo', registro: 'O trabalho',
+    titulo: 'A estrada de seringa',
+    texto: 'A estrada de seringa é um percurso de trabalho. Ao amanhecer, com a poronga acesa, percorra a rota e colete o látex das seringueiras — com cuidado, para não ferir as árvores.',
+    fato: 'Poronga, cabrita e tigelas integram a representação do trabalho seringueiro no Museu da Borracha.',
+    fonte: 'Diagnóstico socioeconômico · Seplan',
+    ceu: '#8fd0ff', colina: '#3a8a45',
+    chao: CHAO_EASY, plataformas: PLAT_EASY,
+    fogos: [], gados: [{ x: 1100, min: 960, max: 1560, dir: 1 }],
+    inicio: [60, 200], fim: [2320, 200]
+  },
+  {
+    nome: 'Fase 3', curto: 'Barracão', emoji: '📒', capitulo: 'Trabalho e dívida',
+    personagem: 'Raimundo', registro: 'O aviamento',
+    titulo: 'A conta do barracão',
+    texto: 'No sistema de aviamento, o barracão fornecia mercadorias e recebia a borracha — e a dívida raramente acabava. Acompanhe a produção e descubra por que a conta nunca fechava.',
+    fato: 'O endividamento recorrente subordinava os seringueiros ao controle dos seringalistas.',
+    fonte: 'Diagnóstico socioeconômico · Seplan',
+    ceu: '#a0d8ff', colina: '#357a3e',
+    chao: CHAO_MED, plataformas: PLAT_MED,
+    fogos: [], gados: [{ x: 900, min: 760, max: 1260, dir: 1 }],
+    inicio: [60, 200], fim: [2300, 200]
+  },
+  {
+    nome: 'Fase 4', curto: 'Crise', emoji: '📉', capitulo: 'Trabalho e dívida',
+    personagem: 'Raimundo', registro: 'A crise',
+    titulo: 'Quando a borracha perde valor',
+    texto: 'A partir da década de 1910, a borracha plantada na Ásia derrubou o preço da produção amazônica. Organize os recursos e ajude as famílias a atravessar a crise.',
+    fato: 'A crise não extinguiu imediatamente o aviamento.',
+    fonte: 'Diagnóstico socioeconômico · Seplan',
+    ceu: '#9bd6ff', colina: '#2f8a45',
+    chao: CHAO_MED, plataformas: PLAT_MED,
+    fogos: [], gados: [
       { x: 900, min: 760, max: 1260, dir: 1 },
       { x: 1800, min: 1500, max: 1940, dir: -1 }
     ],
-    seringueiras: [300, 1000, 1700, 2250],
-    inicio: [60, 200],
-    fim: [2300, 200]
+    inicio: [60, 200], fim: [2300, 200]
   },
   {
-    nome: 'Fase 3 · Consolidar',
-    titulo: 'A floresta também forma lideranças',
-    texto: 'Marina Silva, seringueira do Acre, tornou-se ministra do Meio Ambiente e mostrou ao mundo que a floresta forma lideranças. O período eleitoral é decisivo — atravesse o desafio final e consolide a vitória da floresta!',
-    fato: 'Quem vive da floresta, a protege.',
-    fonte: 'História do Acre',
-    ceu: '#9bd6ff',
-    colina: '#2f8a45',
-    chao: [[0, 520], [600, 500], [1180, 480], [1740, 500], [2280, 120]],
-    plataformas: [[530, 180, 90], [1110, 175, 90], [1670, 180, 90], [2250, 185, 80]],
-    coletaveis: [
-      [140, 200], [300, 180], [460, 200], [640, 170], [820, 200],
-      [980, 175], [1220, 200], [1380, 170], [1520, 200], [1660, 180],
-      [1780, 200], [1920, 175], [2060, 200], [2200, 180]
+    nome: 'Fase 5', curto: 'Guerra', emoji: '🪖', capitulo: 'Guerra e resistência',
+    personagem: 'Antônio', registro: 'Soldados da borracha',
+    titulo: 'Soldados da borracha',
+    texto: 'Na Segunda Guerra, trabalhadores foram mobilizados para produzir borracha na Amazônia. Antônio chega à colocação e descobre que o esforço de guerra não garantia direitos.',
+    fato: 'O Governo do Acre registra trajetórias reais de soldados da borracha em Rio Branco, Xapuri e Plácido de Castro.',
+    fonte: 'Documentário "Soldados da Borracha" · Governo do Acre',
+    ceu: '#87c4e8', colina: '#2f7a3d',
+    chao: CHAO_MED, plataformas: PLAT_MED,
+    fogos: [[1700]], gados: [
+      { x: 900, min: 760, max: 1260, dir: 1 },
+      { x: 1800, min: 1500, max: 1940, dir: -1 }
     ],
-    fogos: [[1350], [2000]],
-    gados: [
+    inicio: [60, 200], fim: [2300, 200]
+  },
+  {
+    nome: 'Fase 6', curto: 'Ameaça', emoji: '🌳', capitulo: 'Guerra e resistência',
+    personagem: 'Rosa', registro: 'A luta pela terra',
+    titulo: 'A floresta ameaçada',
+    texto: 'Década de 1970. O avanço do desmatamento impulsiona a organização dos seringueiros. Rosa visita as famílias para levá-las à reunião comunitária — e preparar a luta pela permanência na terra.',
+    fato: 'Wilson Pinheiro e Chico Mendes participaram dessa luta, ligada aos sindicatos e aos empates.',
+    fonte: 'Registro do projeto documental sobre os empates · Governo do Acre',
+    ceu: '#7ec8ff', colina: '#3a8a45',
+    chao: CHAO_HARD, plataformas: PLAT_HARD,
+    fogos: [], gados: [
+      { x: 700, min: 640, max: 1040, dir: 1 },
+      { x: 1400, min: 1240, max: 1600, dir: -1 }
+    ],
+    inicio: [60, 200], fim: [2340, 200]
+  },
+  {
+    nome: 'Fase 7', curto: 'Empate', emoji: '✊', capitulo: 'Empate e floresta em pé',
+    personagem: 'Rosa', registro: 'Os empates',
+    titulo: 'O empate: força coletiva',
+    texto: 'Os empates mobilizaram famílias para impedir derrubadas sem violência. Reúna os participantes, proteja o grupo e alcance a suspensão do desmatamento.',
+    fato: 'Depoimentos do projeto documental ressaltam o caráter não violento do movimento.',
+    fonte: 'Registro do projeto documental sobre os empates · Governo do Acre',
+    ceu: '#8fd0ff', colina: '#2f7a3d',
+    chao: CHAO_HARD, plataformas: PLAT_HARD,
+    fogos: [[1350]], gados: [
       { x: 700, min: 640, max: 1040, dir: 1 },
       { x: 1400, min: 1240, max: 1600, dir: -1 },
       { x: 1900, min: 1800, max: 2180, dir: 1 }
     ],
-    seringueiras: [250, 850, 1500, 2000, 2320],
-    inicio: [60, 200],
-    fim: [2340, 200]
+    inicio: [60, 200], fim: [2340, 200]
+  },
+  {
+    nome: 'Fase 8', curto: 'Reserva', emoji: '🌲', capitulo: 'Empate e floresta em pé',
+    personagem: 'Rosa', registro: 'A floresta em pé',
+    titulo: 'A floresta em pé',
+    texto: 'Em 1990 nasce a Reserva Extrativista Chico Mendes: permanecer no território e trabalhar com a floresta em pé. Complete o último percurso e reúna as memórias da jornada.',
+    fato: 'A Reserva Extrativista Chico Mendes foi criada pelo Decreto nº 99.144, de 12 de março de 1990.',
+    fonte: 'Decreto nº 99.144/1990 · ICMBio',
+    ceu: '#a0d8ff', colina: '#357a3e',
+    chao: CHAO_HARD, plataformas: PLAT_HARD,
+    fogos: [[1350], [2000]], gados: [
+      { x: 700, min: 640, max: 1040, dir: 1 },
+      { x: 1400, min: 1240, max: 1600, dir: -1 },
+      { x: 1900, min: 1800, max: 2180, dir: 1 }
+    ],
+    inicio: [60, 200], fim: [2340, 200]
   }
 ];
+
+const CAPITULOS = ['O ciclo da borracha', 'Trabalho e dívida', 'Guerra e resistência', 'Empate e floresta em pé'];
 
 /* ===== Estado ===== */
 let faseAtual = 0;
 let pontos = 0;
 let vidas = 3;
 let fasesDesbloqueadas = 1;
+let registros = [];
+let cadernoAberto = false;
 let estado = 'inicio'; // inicio | mapa | fase | jogando | fim
 
 let jogador = { x: 60, y: 200, vx: 0, vy: 0, noChao: false, invencivel: false, invTimer: 0, olhandoDir: 1 };
@@ -113,6 +181,7 @@ const el = {
   hudVidas: document.getElementById('hud-vidas'),
   telaInicio: document.getElementById('tela-inicio'),
   telaMapa: document.getElementById('tela-mapa'),
+  telaCaderno: document.getElementById('tela-caderno'),
   telaFase: document.getElementById('tela-fase'),
   telaFim: document.getElementById('tela-fim'),
   faseEtiqueta: document.getElementById('fase-etiqueta'),
@@ -134,10 +203,10 @@ function carregarFase(i) {
   f.plataformas.forEach(([x, y, w]) => {
     plataformas.push({ x, y, w, h: 16 });
   });
-  coletaveis = f.coletaveis.map(([x, y]) => ({ x, y, vivo: true }));
+  coletaveis = distribuirMoedas(f.chao).map(([x, y]) => ({ x, y, vivo: true }));
   fogos = f.fogos.map(([x]) => ({ x, y: CHAO_Y - 22 }));
   gados = f.gados.map((g) => ({ ...g, y: CHAO_Y - 30 }));
-  seringueiras = (f.seringueiras || []).map((x) => ({ x, y: CHAO_Y, extraida: false }));
+  seringueiras = distribuirSeringueiras(f.chao).map((x) => ({ x, y: CHAO_Y, extraida: false }));
   feedbacks = [];
   reposicionarInicio();
   cameraX = 0;
@@ -158,6 +227,7 @@ function iniciarJogo() {
   pontos = 0;
   vidas = 3;
   fasesDesbloqueadas = 1;
+  registros = [];
   el.telaInicio.hidden = true;
   el.telaFim.hidden = true;
   el.hud.hidden = false;
@@ -171,6 +241,40 @@ function mostrarMapa() {
   atualizarMapa();
 }
 
+function montarMapa() {
+  const mapa = document.getElementById('mapa');
+  mapa.innerHTML = '';
+  let indice = 0;
+  CAPITULOS.forEach((capNome, ci) => {
+    const cap = document.createElement('div');
+    cap.className = 'capitulo';
+    const capTitulo = document.createElement('div');
+    capTitulo.className = 'cap-nome';
+    capTitulo.textContent = 'Capítulo ' + (ci + 1) + ' · ' + capNome;
+    cap.appendChild(capTitulo);
+    const capNodos = document.createElement('div');
+    capNodos.className = 'cap-nodos';
+    for (let j = 0; j < 2 && indice < FASES.length; j++) {
+      const idx = indice;
+      const f = FASES[idx];
+      const nodo = document.createElement('button');
+      nodo.className = 'nodo';
+      nodo.id = 'nodo-' + idx;
+      nodo.innerHTML = `
+        <span class="nodo-emoji">${f.emoji}</span>
+        <span class="nodo-num">${idx + 1}</span>
+        <span class="nodo-nome">${f.curto}</span>
+        <span class="cadeado">🔒</span>
+      `;
+      nodo.addEventListener('click', () => jogarFase(idx));
+      capNodos.appendChild(nodo);
+      indice++;
+    }
+    cap.appendChild(capNodos);
+    mapa.appendChild(cap);
+  });
+}
+
 function atualizarMapa() {
   for (let i = 0; i < FASES.length; i++) {
     const nodo = document.getElementById('nodo-' + i);
@@ -180,6 +284,29 @@ function atualizarMapa() {
     nodo.classList.toggle('atual', i === fasesDesbloqueadas - 1);
     nodo.querySelector('.cadeado').hidden = desbloqueada;
   }
+}
+
+function atualizarCaderno() {
+  const lista = document.getElementById('caderno-lista');
+  lista.innerHTML = '';
+  FASES.forEach((f, i) => {
+    const item = document.createElement('div');
+    const completo = registros.includes(i);
+    item.className = 'caderno-item' + (completo ? ' completo' : '');
+    item.innerHTML = `<span class="ci-num">${i + 1}</span><span class="ci-nome">${f.registro}</span><span class="ci-estado">${completo ? '✔' : '···'}</span>`;
+    lista.appendChild(item);
+  });
+}
+
+function abrirCaderno() {
+  el.telaCaderno.hidden = false;
+  cadernoAberto = true;
+  atualizarCaderno();
+}
+
+function fecharCaderno() {
+  el.telaCaderno.hidden = true;
+  cadernoAberto = false;
 }
 
 function jogarFase(i) {
@@ -207,6 +334,7 @@ function continuarFase() {
 
 function completarFase() {
   pontos += 100;
+  if (!registros.includes(faseAtual)) registros.push(faseAtual);
   if (faseAtual < FASES.length - 1) {
     fasesDesbloqueadas = Math.max(fasesDesbloqueadas, faseAtual + 2);
     mostrarMapa();
@@ -218,8 +346,8 @@ function completarFase() {
 function vencer() {
   estado = 'fim';
   el.telaFim.hidden = false;
-  el.fimTitulo.textContent = '🏆 Floresta em pé! Você venceu.';
-  el.fimMensagem.textContent = `Maximiano resgatou a princesa Oscarina! Você atravessou as 3 fases com ${pontos} pontos. Os empates, a educação e o voto venceram o desmatamento. Chico Mendes ficaria orgulhoso.`;
+  el.fimTitulo.textContent = '📓 Caderno completo!';
+  el.fimMensagem.textContent = 'Jaci reúne as memórias: trabalho, exploração, resistência e organização. A história dos seringueiros — e a história da floresta — continua.';
   somVitoria();
 }
 
@@ -227,7 +355,7 @@ function gameOver() {
   estado = 'fim';
   el.telaFim.hidden = false;
   el.fimTitulo.textContent = 'A floresta está em perigo...';
-  el.fimMensagem.textContent = 'O gado e as queimadas venceram desta vez — mas a luta pela justiça climática continua.';
+  el.fimMensagem.textContent = 'A jornada não terminou — mas a luta pela floresta continua. Tente de novo.';
 }
 
 function machucar() {
@@ -583,22 +711,13 @@ function desenharObjetivo() {
   const x = fim[0] - cameraX;
   const base = CHAO_Y;
 
-  // princesa Oscarina
-  ctx.fillStyle = '#e84393';
-  ctx.fillRect(x + 2, base - 20, 16, 20);
-  ctx.fillStyle = '#c0307a';
-  ctx.fillRect(x, base - 6, 20, 6);
-  // cabeça
-  ctx.fillStyle = '#e8b882';
-  ctx.fillRect(x + 5, base - 30, 10, 11);
-  // cabelo
-  ctx.fillStyle = '#5b3a1e';
-  ctx.fillRect(x + 4, base - 32, 12, 4);
-  // coroa
+  // bandeira de chegada
+  ctx.fillStyle = '#dddddd';
+  ctx.fillRect(x, base - 46, 3, 46);
   ctx.fillStyle = '#ffd21f';
-  ctx.fillRect(x + 7, base - 35, 6, 3);
-
-  desenharRotulo(x + 10, base - 44, 'OSCARINA');
+  ctx.fillRect(x + 3, base - 46, 18, 12);
+  ctx.fillStyle = '#2f7a3d';
+  ctx.fillRect(x + 3, base - 40, 18, 6);
 }
 
 function desenharJogador() {
@@ -652,12 +771,12 @@ function desenharJogador() {
   ctx.fillStyle = '#1d3320';
   ctx.fillRect(p.olhandoDir > 0 ? x + 13 : x + 6, y + 5, 3, 3);
 
-  desenharRotulo(x + 11, y - 20, 'MAXIMIANO');
+  desenharRotulo(x + 11, y - 20, FASES[faseAtual].personagem.toUpperCase());
 }
 
 function loop() {
   requestAnimationFrame(loop);
-  if (estado === 'jogando') {
+  if (estado === 'jogando' && !cadernoAberto) {
     atualizar();
   }
   desenhar();
@@ -674,6 +793,10 @@ window.addEventListener('keydown', (e) => {
     pular();
   }
   if (k === 'e') extrairLatexProximo();
+  if (k === 'c') {
+    if (cadernoAberto) fecharCaderno();
+    else abrirCaderno();
+  }
   if (k === 'enter') {
     if (estado === 'inicio') iniciarJogo();
     else if (estado === 'fase') continuarFase();
@@ -898,11 +1021,13 @@ document.getElementById('botao-iniciar').addEventListener('click', iniciarJogo);
 document.getElementById('botao-continuar').addEventListener('click', continuarFase);
 document.getElementById('botao-reiniciar').addEventListener('click', reiniciar);
 document.getElementById('botao-som').addEventListener('click', alternarMusica);
+document.getElementById('botao-caderno').addEventListener('click', () => {
+  if (cadernoAberto) fecharCaderno();
+  else abrirCaderno();
+});
+document.getElementById('botao-caderno-fechar').addEventListener('click', fecharCaderno);
 
-for (let i = 0; i < FASES.length; i++) {
-  document.getElementById('nodo-' + i).addEventListener('click', () => jogarFase(i));
-}
-
+montarMapa();
 configurarTouch();
 atualizarHud();
 loop();
