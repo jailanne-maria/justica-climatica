@@ -997,7 +997,8 @@ let musicaLigada = false;
 let indiceMelodia = 0;
 let proximoTempo = 0;
 let timerMusica = null;
-const BPM = 132;
+let bufferNoise = null;
+const BPM = 172;
 const SEG_BATIDA = 60 / BPM;
 
 function tocarNota(freq, quando, dur, tipo, volume) {
@@ -1022,9 +1023,51 @@ function agendarNotas() {
       const iB = Math.floor(indiceMelodia / 2) % BAIXO.length;
       tocarNota(NOTAS[BAIXO[iB][0]], proximoTempo, 2 * SEG_BATIDA, 'triangle', 0.13);
     }
+    tocarBumbo(proximoTempo);
+    tocarChapeu(proximoTempo + SEG_BATIDA * 0.5);
     proximoTempo += durM * SEG_BATIDA;
     indiceMelodia += 1;
   }
+}
+
+function tocarBumbo(quando) {
+  const osc = audioCtx.createOscillator();
+  const g = audioCtx.createGain();
+  osc.type = 'sine';
+  osc.frequency.setValueAtTime(150, quando);
+  osc.frequency.exponentialRampToValueAtTime(50, quando + 0.08);
+  g.gain.setValueAtTime(0.0001, quando);
+  g.gain.exponentialRampToValueAtTime(0.25, quando + 0.005);
+  g.gain.exponentialRampToValueAtTime(0.0001, quando + 0.12);
+  osc.connect(g);
+  g.connect(audioCtx.destination);
+  osc.start(quando);
+  osc.stop(quando + 0.15);
+}
+
+function criarRuido() {
+  if (bufferNoise) return bufferNoise;
+  const len = Math.floor(audioCtx.sampleRate * 0.05);
+  bufferNoise = audioCtx.createBuffer(1, len, audioCtx.sampleRate);
+  const dados = bufferNoise.getChannelData(0);
+  for (let i = 0; i < len; i++) dados[i] = Math.random() * 2 - 1;
+  return bufferNoise;
+}
+
+function tocarChapeu(quando) {
+  const src = audioCtx.createBufferSource();
+  src.buffer = criarRuido();
+  const filtro = audioCtx.createBiquadFilter();
+  filtro.type = 'highpass';
+  filtro.frequency.value = 6000;
+  const g = audioCtx.createGain();
+  g.gain.setValueAtTime(0.1, quando);
+  g.gain.exponentialRampToValueAtTime(0.0001, quando + 0.05);
+  src.connect(filtro);
+  filtro.connect(g);
+  g.connect(audioCtx.destination);
+  src.start(quando);
+  src.stop(quando + 0.06);
 }
 
 function iniciarMusica() {
