@@ -50,6 +50,12 @@ function distribuirSeringueiras(chao) {
   return chao.map(([x, w]) => x + Math.floor(w / 2));
 }
 
+function distribuirVida(chao) {
+  let melhor = chao[0];
+  for (const seg of chao) if (seg[1] > melhor[1]) melhor = seg;
+  return [{ x: melhor[0] + melhor[1] / 2, y: 172 }];
+}
+
 /* ===== Níveis (8 fases em 4 capítulos) ===== */
 const FASES = [
   {
@@ -183,6 +189,7 @@ let coletaveis = [];
 let fogos = [];
 let gados = [];
 let seringueiras = [];
+let moedasVida = [];
 let feedbacks = [];
 let cameraX = 0;
 
@@ -225,6 +232,7 @@ function carregarFase(i) {
   fogos = f.fogos.map(([x]) => ({ x, y: CHAO_Y - 22 }));
   gados = f.gados.map((g) => ({ ...g, y: CHAO_Y - 30 }));
   seringueiras = distribuirSeringueiras(f.chao).map((x) => ({ x, y: CHAO_Y, extraida: false }));
+  moedasVida = distribuirVida(f.chao).map(([x, y]) => ({ x, y, vivo: true }));
   feedbacks = [];
   reposicionarInicio();
   cameraX = 0;
@@ -451,6 +459,21 @@ function atualizar() {
     }
   }
 
+  // moeda de vida
+  for (const mv of moedasVida) {
+    if (!mv.vivo) continue;
+    if (
+      p.x < mv.x + 14 && p.x + PJ_L > mv.x - 14 &&
+      p.y < mv.y + 14 && p.y + PJ_A > mv.y - 14
+    ) {
+      mv.vivo = false;
+      vidas = Math.min(5, vidas + 1);
+      somVida();
+      adicionarFeedback(mv.x, mv.y - 16, '+1 VIDA');
+      atualizarHud();
+    }
+  }
+
   // gado
   for (const g of gados) {
     g.x += g.dir * 1.4;
@@ -540,6 +563,7 @@ function desenhar() {
   desenharSeringueiras();
   desenharObjetivo();
   desenharColetaveis();
+  desenharMoedasVida();
   desenharFogos();
   desenharGados();
   desenharJogador();
@@ -745,6 +769,32 @@ function desenharMoeda(cx, cy, escala) {
   ctx.fillRect(cx - Math.max(1, w - 2), cy - r + 2, Math.max(1, (w - 2) * 2), 2);
   ctx.fillStyle = '#fff3b0';
   ctx.fillRect(cx - Math.max(1, w - 1), cy - 3, Math.max(1, (w - 1) * 2), 2);
+}
+
+function desenharMoedasVida() {
+  for (const mv of moedasVida) {
+    if (!mv.vivo) continue;
+    const t = Date.now() * 0.01;
+    const escala = Math.abs(Math.cos(t + mv.x * 0.05));
+    const cx = mv.x - cameraX;
+    const cy = mv.y + Math.sin(t * 0.8 + mv.x) * 2;
+    const r = 8;
+    const w = Math.max(1, Math.round(r * (0.25 + escala * 0.75)));
+    // contorno
+    ctx.fillStyle = '#006400';
+    ctx.fillRect(cx - w - 1, cy - r - 1, w * 2 + 2, r * 2 + 2);
+    ctx.fillStyle = '#2ecc40';
+    ctx.fillRect(cx - w, cy - r, w * 2, r * 2);
+    ctx.fillStyle = '#7bd87b';
+    ctx.fillRect(cx - w + 1, cy - r + 1, w * 2 - 2, r * 2 - 2);
+    // coração (só quando a moeda está de frente)
+    if (w >= 4) {
+      ctx.fillStyle = '#ffffff';
+      ctx.fillRect(cx - 3, cy - 3, 2, 2);
+      ctx.fillRect(cx + 1, cy - 3, 2, 2);
+      ctx.fillRect(cx - 2, cy - 1, 4, 4);
+    }
+  }
 }
 
 function desenharSeringueiras() {
@@ -1260,6 +1310,14 @@ function somVitoria() {
   const agora = audioCtx.currentTime;
   [NOTAS.C5, NOTAS.E5, NOTAS.G5, NOTAS.C6].forEach((f, i) => {
     tocarNota(f, agora + i * 0.12, 0.18, 'square', 0.12);
+  });
+}
+
+function somVida() {
+  if (!garantirAudio()) return;
+  const agora = audioCtx.currentTime;
+  [NOTAS.C5, NOTAS.E5, NOTAS.G5, NOTAS.C6, NOTAS.E6].forEach((f, i) => {
+    tocarNota(f, agora + i * 0.07, 0.1, 'square', 0.11);
   });
 }
 
