@@ -187,6 +187,8 @@ let feedbacks = [];
 let cameraX = 0;
 
 const teclas = { esq: false, dir: false };
+let gamepadDir = 0;
+let gamepadPrev = {};
 let controlesTouchAtivos = false;
 
 /* ===== Elementos ===== */
@@ -405,8 +407,8 @@ function atualizar() {
   }
 
   let mover = 0;
-  if (teclas.esq) mover -= 1;
-  if (teclas.dir) mover += 1;
+  if (teclas.esq || gamepadDir < 0) mover -= 1;
+  if (teclas.dir || gamepadDir > 0) mover += 1;
   p.vx = mover * VEL;
   if (mover !== 0) p.olhandoDir = mover > 0 ? 1 : -1;
 
@@ -932,6 +934,7 @@ function desenharJogador() {
 
 function loop() {
   requestAnimationFrame(loop);
+  processarGamepad();
   if (estado === 'jogando' && !cadernoAberto) {
     atualizar();
   }
@@ -1008,6 +1011,40 @@ function configurarTouch() {
 function reiniciar() {
   el.telaFim.hidden = true;
   iniciarJogo();
+}
+
+/* ===== Controle (gamepad) ===== */
+function processarGamepad() {
+  if (!navigator.getGamepads) return;
+  const pads = navigator.getGamepads();
+  for (const gp of pads) {
+    if (!gp || !gp.connected) continue;
+    const prev = gamepadPrev[gp.index] || {};
+
+    const eixoX = gp.axes[0] || 0;
+    const dpadEsq = gp.buttons[14] && gp.buttons[14].pressed;
+    const dpadDir = gp.buttons[15] && gp.buttons[15].pressed;
+    gamepadDir = (dpadEsq || eixoX < -0.3) ? -1 : (dpadDir || eixoX > 0.3) ? 1 : 0;
+
+    const justPressed = (i) => gp.buttons[i] && gp.buttons[i].pressed && !prev[i];
+
+    if (justPressed(0)) {
+      if (estado === 'jogando') pular();
+      else if (estado === 'inicio') iniciarJogo();
+      else if (estado === 'mapa') jogarFase(fasesDesbloqueadas - 1);
+      else if (estado === 'fase') continuarFase();
+      else if (estado === 'fim') reiniciar();
+    }
+    if (justPressed(1)) extrairLatexProximo();
+    if (justPressed(9)) {
+      if (cadernoAberto) fecharCaderno();
+      else abrirCaderno();
+    }
+
+    const snap = {};
+    for (let i = 0; i < gp.buttons.length; i++) snap[i] = gp.buttons[i].pressed;
+    gamepadPrev[gp.index] = snap;
+  }
 }
 
 /* ===== Música (chiptune via Web Audio) ===== */
