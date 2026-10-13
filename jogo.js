@@ -1014,6 +1014,17 @@ function reiniciar() {
 }
 
 /* ===== Controle (gamepad) ===== */
+function mostrarToast(texto) {
+  const t = document.getElementById('toast');
+  t.textContent = texto;
+  t.hidden = false;
+  clearTimeout(window.__toastTimer);
+  window.__toastTimer = setTimeout(() => { t.hidden = true; }, 2500);
+}
+
+window.addEventListener('gamepadconnected', () => mostrarToast('🎮 Controle conectado'));
+window.addEventListener('gamepaddisconnected', () => mostrarToast('Controle desconectado'));
+
 function processarGamepad() {
   if (!navigator.getGamepads) return;
   const pads = navigator.getGamepads();
