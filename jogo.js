@@ -20,6 +20,22 @@ const PLAT_MED = [[650, 180, 90], [1330, 175, 90], [2010, 180, 100]];
 const CHAO_HARD = [[0, 520], [600, 500], [1180, 480], [1740, 500], [2280, 120]];
 const PLAT_HARD = [[530, 180, 90], [1110, 175, 90], [1670, 180, 90], [2250, 185, 80]];
 
+/* ===== Paleta NES (estilo 8-bit) ===== */
+const CORES = {
+  ceuTopo: '#4a7ce0',
+  ceu: '#5c94fc',
+  ceuBaixo: '#8ab8ff',
+  grama: '#00a800',
+  gramaEsc: '#006400',
+  gramaClara: '#7bd87b',
+  colina: '#00a800',
+  tijolo: '#c84c0c',
+  tijoloEsc: '#8a3400',
+  tijoloClaro: '#e8782c',
+  bloco: '#f8b800',
+  blocoEsc: '#b87800'
+};
+
 function distribuirMoedas(chao) {
   const moedas = [];
   for (const [x, w] of chao) {
@@ -508,9 +524,9 @@ function desenhar() {
 
   // céu
   const grad = ctx.createLinearGradient(0, 0, 0, ALTURA);
-  grad.addColorStop(0, '#2b6fc0');
-  grad.addColorStop(0.5, f.ceu);
-  grad.addColorStop(1, '#f4e9c0');
+  grad.addColorStop(0, CORES.ceuTopo);
+  grad.addColorStop(0.55, CORES.ceu);
+  grad.addColorStop(1, CORES.ceuBaixo);
   ctx.fillStyle = grad;
   ctx.fillRect(0, 0, LARGURA, ALTURA);
 
@@ -518,7 +534,6 @@ function desenhar() {
   desenharNuvens();
   desenharMontanhas();
 
-  desenharArvores();
   desenharPlataformas();
   desenharSeringueiras();
   desenharObjetivo();
@@ -542,40 +557,38 @@ function desenharSol() {
   ctx.fillRect(x - r + 3, y - r + 3, r * 2 - 6, r * 2 - 6);
 }
 
-function desenharMontanhas() {
-  const f = FASES[faseAtual];
+function desenharColinaSMB(cx, baseY, altura, largura, corContorno, corCorpo, corBrilho) {
+  const camadas = 9;
+  function desenhar(cor, encolhe) {
+    for (let i = 0; i < camadas; i++) {
+      const t = i / (camadas - 1);
+      const w = Math.max(2, largura * (0.4 + 0.6 * t) - encolhe * 2);
+      const y = baseY - altura + altura * t;
+      ctx.fillStyle = cor;
+      ctx.fillRect(cx - w / 2, y, w, altura / (camadas - 1) + 1);
+    }
+  }
+  desenhar(corContorno, 0);
+  desenhar(corCorpo, 4);
+  ctx.fillStyle = corBrilho;
+  ctx.fillRect(cx - largura * 0.18, baseY - altura + 2, largura * 0.36, 4);
+}
 
-  // montanhas distantes
-  const off1 = cameraX * 0.2;
-  const p1 = Math.floor(off1 / 240) - 1;
-  ctx.fillStyle = '#a7c6e0';
+function desenharMontanhas() {
+  const off1 = cameraX * 0.25;
+  const p1 = Math.floor(off1 / 260) - 1;
   for (let i = p1; i < p1 + 5; i++) {
-    const cx = i * 240 - off1;
-    const topo = 70 + (((i % 2) + 2) % 2) * 26;
-    ctx.beginPath();
-    ctx.moveTo(cx - 120, ALTURA);
-    ctx.lineTo(cx, topo);
-    ctx.lineTo(cx + 120, ALTURA);
-    ctx.closePath();
-    ctx.fill();
-    ctx.fillStyle = '#cfe4f2';
-    ctx.fillRect(cx - 2, topo - 2, 4, 4);
-    ctx.fillStyle = '#a7c6e0';
+    const cx = i * 260 - off1;
+    const topo = 120 + (((i % 2) + 2) % 2) * 20;
+    desenharColinaSMB(cx, ALTURA, ALTURA - topo, 150, '#006400', '#3cb73c', '#7bd87b');
   }
 
-  // colinas verdes
-  const off2 = cameraX * 0.35;
-  const p2 = Math.floor(off2 / 180) - 1;
+  const off2 = cameraX * 0.4;
+  const p2 = Math.floor(off2 / 200) - 1;
   for (let i = p2; i < p2 + 6; i++) {
-    const cx = i * 180 - off2;
-    const topo = 150 + (((i % 2) + 2) % 2) * 25;
-    ctx.fillStyle = f.colina;
-    ctx.beginPath();
-    ctx.moveTo(cx - 90, ALTURA);
-    ctx.lineTo(cx, topo);
-    ctx.lineTo(cx + 90, ALTURA);
-    ctx.closePath();
-    ctx.fill();
+    const cx = i * 200 - off2;
+    const topo = 182 + (((i % 2) + 2) % 2) * 24;
+    desenharColinaSMB(cx, ALTURA, ALTURA - topo, 120, '#006400', '#00a800', '#7bd87b');
   }
 }
 
@@ -667,31 +680,41 @@ function desenharArvores() {
 function desenharPlataformas() {
   for (const plat of plataformas) {
     const x = plat.x - cameraX;
-    // terra
-    ctx.fillStyle = '#6b4a2b';
-    ctx.fillRect(x, plat.y, plat.w, plat.h);
-    // manchas de terra
-    ctx.fillStyle = '#5a3d22';
-    const semente = (plat.x * 2654435761) >>> 0;
-    for (let i = 0; i < plat.w / 24; i++) {
-      const px = x + 8 + i * 24 + (semente % 8);
-      const py = plat.y + 16 + ((semente + i * 13) % 12);
-      ctx.fillRect(px, py, 5, 3);
+    const w = plat.w, y = plat.y, h = plat.h;
+    const ehChao = plat.y >= CHAO_Y - 1;
+
+    // tijolos
+    ctx.fillStyle = CORES.tijolo;
+    ctx.fillRect(x, y, w, h);
+    ctx.fillStyle = CORES.tijoloEsc;
+    ctx.fillRect(x, y + h - 1, w, 1);
+
+    // linhas horizontais do tijolo
+    ctx.fillStyle = CORES.tijoloEsc;
+    const inicio = ehChao ? y + 8 : y;
+    for (let yy = inicio + 8; yy < y + h; yy += 8) {
+      ctx.fillRect(x, yy, w, 1);
     }
-    // sombra inferior
-    ctx.fillStyle = '#4a3018';
-    ctx.fillRect(x, plat.y + plat.h - 4, plat.w, 4);
-    // grama
-    ctx.fillStyle = '#2f7a3d';
-    ctx.fillRect(x, plat.y, plat.w, 6);
-    ctx.fillStyle = '#3fae58';
-    ctx.fillRect(x, plat.y, plat.w, 3);
-    ctx.fillStyle = '#5cc06a';
-    ctx.fillRect(x, plat.y, plat.w, 1);
-    // tufos de grama
-    ctx.fillStyle = '#2f7a3d';
-    for (let i = 0; i < plat.w / 8; i++) {
-      ctx.fillRect(x + 3 + i * 8, plat.y + 4, 3, 2);
+    // juntas verticais alternadas
+    for (let yy = inicio; yy < y + h; yy += 8) {
+      const linha = Math.floor((yy - inicio) / 8);
+      const desl = (linha % 2 === 0) ? 0 : 12;
+      for (let xx = x + desl; xx < x + w; xx += 24) {
+        ctx.fillRect(xx, yy + 1, 1, 7);
+      }
+    }
+    // brilho no topo
+    ctx.fillStyle = CORES.tijoloClaro;
+    ctx.fillRect(x, inicio, w, 1);
+
+    // grama (só no chão)
+    if (ehChao) {
+      ctx.fillStyle = CORES.gramaEsc;
+      ctx.fillRect(x, y, w, 8);
+      ctx.fillStyle = CORES.grama;
+      ctx.fillRect(x, y, w, 6);
+      ctx.fillStyle = CORES.gramaClara;
+      ctx.fillRect(x, y, w, 2);
     }
   }
 }
@@ -797,13 +820,26 @@ function desenharObjetivo() {
   const x = fim[0] - cameraX;
   const base = CHAO_Y;
 
-  // bandeira de chegada
-  ctx.fillStyle = '#dddddd';
-  ctx.fillRect(x, base - 46, 3, 46);
-  ctx.fillStyle = '#ffd21f';
-  ctx.fillRect(x + 3, base - 46, 18, 12);
-  ctx.fillStyle = '#2f7a3d';
-  ctx.fillRect(x + 3, base - 40, 18, 6);
+  // base de tijolo
+  ctx.fillStyle = CORES.tijolo;
+  ctx.fillRect(x - 5, base - 7, 16, 7);
+  ctx.fillStyle = CORES.tijoloEsc;
+  ctx.fillRect(x - 5, base - 1, 16, 1);
+  // mastro
+  ctx.fillStyle = '#7bd87b';
+  ctx.fillRect(x, base - 54, 3, 48);
+  ctx.fillStyle = '#ffffff';
+  ctx.fillRect(x + 1, base - 54, 1, 48);
+  // bandeira
+  ctx.fillStyle = '#e8412c';
+  ctx.fillRect(x + 3, base - 54, 18, 10);
+  ctx.fillStyle = '#ffffff';
+  ctx.fillRect(x + 3, base - 48, 18, 2);
+  // bola no topo
+  ctx.fillStyle = CORES.grama;
+  ctx.fillRect(x - 1, base - 58, 5, 5);
+  ctx.fillStyle = CORES.gramaClara;
+  ctx.fillRect(x, base - 57, 2, 2);
 }
 
 function coresDoPersonagem(nome) {
