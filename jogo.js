@@ -159,8 +159,8 @@ const FASES = [
     personagem: 'Rosa', registro: 'A floresta em pé',
     titulo: 'A floresta em pé',
     texto: 'Em 1990 nasce a Reserva Extrativista Chico Mendes: permanecer no território e trabalhar com a floresta em pé. Complete o último percurso e reúna as memórias da jornada.',
-    fato: 'A Reserva Extrativista Chico Mendes foi criada pelo Decreto nº 99.144, de 12 de março de 1990.',
-    fonte: 'Decreto nº 99.144/1990 · ICMBio',
+    fato: 'A Reserva Extrativista Chico Mendes foi criada pelo Decreto nº 99.144, de 12/03/1990, com cerca de 970.570 hectares em Xapuri, Rio Branco, Brasiléia e Assis Brasil.',
+    fonte: 'Decreto nº 99.144/1990 · Planalto',
     ceu: '#a0d8ff', colina: '#357a3e',
     chao: CHAO_HARD, plataformas: PLAT_HARD,
     fogos: [[1350], [2000]], gados: [
