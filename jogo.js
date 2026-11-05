@@ -53,7 +53,7 @@ function distribuirSeringueiras(chao) {
 function distribuirVida(chao) {
   let melhor = chao[0];
   for (const seg of chao) if (seg[1] > melhor[1]) melhor = seg;
-  return [{ x: melhor[0] + melhor[1] / 2, y: 172 }];
+  return [[melhor[0] + melhor[1] / 2, 172]];
 }
 
 /* ===== Níveis (8 fases em 4 capítulos) ===== */
