@@ -905,9 +905,9 @@ function desenharObjetivo() {
 
 function coresDoPersonagem(nome) {
   const mapa = {
-    'Raimundo': { camisa: '#c89450', camisaEsc: '#9c6a2f', calca: '#5b3a1e', gorro: '#7a4a22' },
-    'Antônio': { camisa: '#5a7a3a', camisaEsc: '#3f5a28', calca: '#3a3a3a', gorro: '#4a5a2a' },
-    'Rosa': { camisa: '#d94f8c', camisaEsc: '#a8356a', calca: '#4a3a6a', gorro: '#8c3f6a' }
+    'Raimundo': { camisa: '#c89450', camisaEsc: '#9c6a2f', camisaClara: '#e0b070', calca: '#5b3a1e', calcaEsc: '#4a2d16', gorro: '#7a4a22', gorroEsc: '#5b3a1e' },
+    'Antônio': { camisa: '#5a7a3a', camisaEsc: '#3f5a28', camisaClara: '#7a9a52', calca: '#3a3a3a', calcaEsc: '#2a2a2a', gorro: '#4a5a2a', gorroEsc: '#33401d' },
+    'Rosa': { camisa: '#d94f8c', camisaEsc: '#a8356a', camisaClara: '#f07fb0', calca: '#4a3a6a', calcaEsc: '#3a2d55', gorro: '#8c3f6a', gorroEsc: '#5f2a4a' }
   };
   return mapa[nome] || mapa['Raimundo'];
 }
@@ -919,76 +919,111 @@ function desenharJogador() {
   const y = Math.round(p.y);
   const c = coresDoPersonagem(FASES[faseAtual].personagem);
   const dir = p.olhandoDir;
-  const OUT = '#1a0c08';
-  const passo = p.noChao && p.vx !== 0 ? Math.floor(Date.now() / 120) % 2 : 0;
+  const OUT = '#140a06';
+  const PELE = '#e8b882';
+  const PELE_E = '#c9976a';
+  const andando = p.noChao && Math.abs(p.vx) > 0.1;
+  const passo = andando ? Math.floor(Date.now() / 130) % 2 : 0;
+  const fl = Math.floor(Date.now() / 140) % 3;
 
-  // pernas
+  // pernas (calça)
   ctx.fillStyle = OUT;
-  ctx.fillRect(x + 4, y + 21, 7, 9);
-  ctx.fillRect(x + 11, y + 21, 7, 9);
+  ctx.fillRect(x + 3, y + 20, 8, 10);
+  ctx.fillRect(x + 11, y + 20, 8, 10);
+  ctx.fillStyle = c.calcaEsc;
+  ctx.fillRect(x + 4 + (passo ? 1 : 0), y + 20, 6, 8);
+  ctx.fillRect(x + 12 - (passo ? 1 : 0), y + 20, 6, 8);
   ctx.fillStyle = c.calca;
-  ctx.fillRect(x + 5, y + 21, 6, 8);
-  ctx.fillRect(x + 12, y + 21, 6, 8);
+  ctx.fillRect(x + 4 + (passo ? 1 : 0), y + 20, 6, 6);
+  ctx.fillRect(x + 12 - (passo ? 1 : 0), y + 20, 6, 6);
 
   // botas
   ctx.fillStyle = OUT;
-  ctx.fillRect(x + 4 + (passo ? 2 : 0), y + 27, 8, 3);
+  ctx.fillRect(x + 3 + (passo ? 2 : 0), y + 27, 8, 3);
   ctx.fillRect(x + 11 - (passo ? 2 : 0), y + 27, 8, 3);
   ctx.fillStyle = '#6b4a2b';
-  ctx.fillRect(x + 5 + (passo ? 2 : 0), y + 27, 6, 3);
+  ctx.fillRect(x + 4 + (passo ? 2 : 0), y + 27, 6, 3);
   ctx.fillRect(x + 12 - (passo ? 2 : 0), y + 27, 6, 3);
+  ctx.fillStyle = '#8a5a2b';
+  ctx.fillRect(x + 4 + (passo ? 2 : 0), y + 27, 6, 1);
+  ctx.fillRect(x + 12 - (passo ? 2 : 0), y + 27, 6, 1);
 
-  // torso
-  ctx.fillStyle = OUT;
-  ctx.fillRect(x + 2, y + 9, 18, 14);
-  ctx.fillStyle = c.camisa;
-  ctx.fillRect(x + 3, y + 10, 16, 12);
+  // braço de trás (lado oposto ao que olha)
   ctx.fillStyle = c.camisaEsc;
-  ctx.fillRect(x + 3, y + 18, 16, 3);
+  ctx.fillRect(dir > 0 ? x + 3 : x + 16, y + 10, 3, 7);
+  ctx.fillStyle = PELE_E;
+  ctx.fillRect(dir > 0 ? x + 3 : x + 16, y + 16, 3, 3);
 
-  // braço + mão
+  // torso (camisa)
   ctx.fillStyle = OUT;
-  ctx.fillRect(dir > 0 ? x + 16 : x + 2, y + 11, 4, 8);
+  ctx.fillRect(x + 2, y + 8, 18, 14);
   ctx.fillStyle = c.camisa;
-  ctx.fillRect(dir > 0 ? x + 17 : x + 3, y + 11, 3, 7);
-  ctx.fillStyle = '#e8b882';
+  ctx.fillRect(x + 3, y + 9, 16, 12);
+  ctx.fillStyle = c.camisaClara;
+  ctx.fillRect(x + 3, y + 9, 16, 3);
+  ctx.fillStyle = c.camisaEsc;
+  ctx.fillRect(x + 3, y + 16, 16, 3);
+  // cinto + fivela
+  ctx.fillStyle = '#3a2a18';
+  ctx.fillRect(x + 3, y + 18, 16, 2);
+  ctx.fillStyle = '#ffd21f';
+  ctx.fillRect(x + 10, y + 18, 3, 2);
+
+  // braço da frente
+  ctx.fillStyle = OUT;
+  ctx.fillRect(dir > 0 ? x + 16 : x + 2, y + 10, 4, 8);
+  ctx.fillStyle = c.camisa;
+  ctx.fillRect(dir > 0 ? x + 17 : x + 3, y + 10, 3, 7);
+  ctx.fillStyle = PELE;
   ctx.fillRect(dir > 0 ? x + 17 : x + 3, y + 16, 3, 3);
 
   // cabeça
   ctx.fillStyle = OUT;
   ctx.fillRect(x + 4, y - 1, 14, 13);
-  ctx.fillStyle = '#e8b882';
+  ctx.fillStyle = PELE;
   ctx.fillRect(x + 5, y, 12, 11);
+  ctx.fillStyle = PELE_E;
+  ctx.fillRect(x + 5, y + 8, 12, 3);
 
-  // cabelo
-  ctx.fillStyle = '#5b3a1e';
+  // cabelo + costeleta
+  ctx.fillStyle = '#3a2513';
   ctx.fillRect(x + 5, y, 12, 3);
+  ctx.fillRect(dir > 0 ? x + 5 : x + 15, y + 1, 2, 5);
 
   // gorro/boné
+  ctx.fillStyle = c.gorroEsc;
+  ctx.fillRect(x + 3, y - 3, 16, 4);
+  ctx.fillRect(x + 5, y - 5, 12, 3);
   ctx.fillStyle = c.gorro;
-  ctx.fillRect(x + 3, y - 2, 16, 4);
-  ctx.fillRect(x + 5, y - 4, 12, 3);
+  ctx.fillRect(x + 3, y - 3, 16, 2);
+  ctx.fillRect(x + 5, y - 5, 12, 2);
 
-  // olho
+  // olho + boca
   ctx.fillStyle = '#ffffff';
-  ctx.fillRect(dir > 0 ? x + 13 : x + 6, y + 4, 3, 3);
-  ctx.fillStyle = '#1d3320';
-  ctx.fillRect(dir > 0 ? x + 14 : x + 6, y + 5, 2, 2);
+  ctx.fillRect(dir > 0 ? x + 12 : x + 6, y + 4, 3, 3);
+  ctx.fillStyle = '#140a06';
+  ctx.fillRect(dir > 0 ? x + 13 : x + 7, y + 5, 2, 2);
+  ctx.fillStyle = '#a97a52';
+  ctx.fillRect(dir > 0 ? x + 11 : x + 8, y + 8, 3, 1);
 
-  // poronga (lâmpada de cabeça dos seringueiros)
+  // poronga (lâmpada de cabeça)
   ctx.fillStyle = '#3a2513';
-  ctx.fillRect(x + 2, y - 6, 18, 3);
+  ctx.fillRect(x + 2, y - 7, 18, 3);
+  ctx.fillStyle = '#8a5a2b';
+  ctx.fillRect(x + 7, y - 7, 7, 2);
   ctx.fillStyle = '#c89450';
-  ctx.fillRect(x + 7, y - 11, 7, 6);
+  ctx.fillRect(x + 7, y - 12, 7, 6);
+  ctx.fillStyle = '#e0b070';
+  ctx.fillRect(x + 8, y - 12, 4, 1);
   ctx.fillStyle = '#fff3b0';
-  ctx.fillRect(x + 8, y - 10, 4, 2);
-  const fl = Math.floor(Date.now() / 140) % 3;
+  ctx.fillRect(x + 8, y - 11, 4, 2);
+  // chama
   ctx.fillStyle = '#ff9f1a';
-  ctx.fillRect(x + 9, y - 13 - fl, 2, 3);
+  ctx.fillRect(x + 9, y - 14 - fl, 2, 3);
   ctx.fillStyle = '#ffd21f';
-  ctx.fillRect(x + 10, y - 12 - fl, 1, 2);
+  ctx.fillRect(x + 10, y - 13 - fl, 1, 2);
 
-  desenharRotulo(x + 11, y - 22, FASES[faseAtual].personagem.toUpperCase());
+  desenharRotulo(x + 11, y - 23, FASES[faseAtual].personagem.toUpperCase());
 }
 
 function loop() {
