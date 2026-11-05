@@ -179,6 +179,7 @@ let faseAtual = 0;
 let pontos = 0;
 let vidas = 3;
 let fasesDesbloqueadas = 1;
+let focoMapa = 0;
 let registros = [];
 let cadernoAberto = false;
 let estado = 'inicio'; // inicio | mapa | fase | jogando | fim
@@ -263,7 +264,14 @@ function iniciarJogo() {
 
 function mostrarMapa() {
   estado = 'mapa';
+  focoMapa = fasesDesbloqueadas - 1;
   el.telaMapa.hidden = false;
+  atualizarMapa();
+}
+
+function moverFoco(d) {
+  const max = fasesDesbloqueadas - 1;
+  focoMapa = (focoMapa + d + (max + 1)) % (max + 1);
   atualizarMapa();
 }
 
@@ -308,6 +316,7 @@ function atualizarMapa() {
     nodo.disabled = !desbloqueada;
     nodo.classList.toggle('bloqueado', !desbloqueada);
     nodo.classList.toggle('atual', i === fasesDesbloqueadas - 1);
+    nodo.classList.toggle('foco', i === focoMapa);
     nodo.querySelector('.cadeado').hidden = desbloqueada;
   }
 }
@@ -995,11 +1004,18 @@ function loop() {
 /* ===== Entrada ===== */
 window.addEventListener('keydown', (e) => {
   const k = e.key.toLowerCase();
-  if (k === 'arrowleft' || k === 'a') teclas.esq = true;
-  if (k === 'arrowright' || k === 'd') teclas.dir = true;
+  if (k === 'arrowleft' || k === 'a') {
+    teclas.esq = true;
+    if (estado === 'mapa') moverFoco(-1);
+  }
+  if (k === 'arrowright' || k === 'd') {
+    teclas.dir = true;
+    if (estado === 'mapa') moverFoco(1);
+  }
   if (k === 'arrowup' || k === 'w' || k === ' ') {
     e.preventDefault();
-    pular();
+    if (estado === 'mapa') jogarFase(focoMapa);
+    else pular();
   }
   if (k === 'e') extrairLatexProximo();
   if (k === 'c') {
@@ -1008,6 +1024,7 @@ window.addEventListener('keydown', (e) => {
   }
   if (k === 'enter') {
     if (estado === 'inicio') iniciarJogo();
+    else if (estado === 'mapa') jogarFase(focoMapa);
     else if (estado === 'fase') continuarFase();
     else if (estado === 'fim') reiniciar();
   }

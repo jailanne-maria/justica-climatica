@@ -270,6 +270,11 @@ body {
   box-shadow: 0 0 0 3px #ffd21f, 0 0 20px rgba(255, 210, 31, 0.55);
 }
 
+.nodo.foco {
+  outline: 2px solid #ffffff;
+  outline-offset: 2px;
+}
+
 .nodo.atual::before {
   content: "🧢";
   position: absolute;
