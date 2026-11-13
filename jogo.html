@@ -28,7 +28,6 @@
         <div class="hud-esquerda">
           <span class="hud-capitulo" id="hud-fase">01</span>
           <div class="hud-info">
-            <span class="hud-nome" id="hud-personagem">Raimundo</span>
             <span class="hud-objetivo">Encontre as memórias</span>
           </div>
         </div>
@@ -47,6 +46,23 @@
         <button class="botao" id="botao-iniciar">🌱 Começar a jornada</button>
       </div>
 
+      <div class="overlay overlay-centro" id="tela-personagem" hidden>
+        <div class="mapa-titulo">Escolha seu personagem</div>
+        <div class="personagens">
+          <button class="card-personagem" id="botao-menina">
+            <span class="cp-avatar">👧</span>
+            <span class="cp-tag">PLAY 1</span>
+            <span class="cp-nome">Menina</span>
+          </button>
+          <button class="card-personagem" id="botao-menino">
+            <span class="cp-avatar">👦</span>
+            <span class="cp-tag">PLAY 2</span>
+            <span class="cp-nome">Menino</span>
+          </button>
+        </div>
+        <p class="cp-dica">Use ← → e Enter, ou toque para escolher</p>
+      </div>
+
       <div class="overlay overlay-mapa" id="tela-mapa" hidden>
         <div class="mapa-titulo">Mapa das fases</div>
         <div class="mapa" id="mapa"></div>
@@ -58,6 +74,7 @@
         <p class="txt" id="fase-texto"></p>
         <p class="fato"><strong>Fato:</strong> <span id="fase-fato"></span></p>
         <p class="src">Fonte: <span id="fase-fonte"></span></p>
+        <p class="aviso" id="fase-aviso"></p>
         <button class="botao" id="botao-continuar">Continuar →</button>
       </div>
 

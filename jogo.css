@@ -277,6 +277,17 @@ body.pixel {
   margin: 0;
 }
 
+.aviso {
+  font-family: 'Press Start 2P', 'Courier New', monospace;
+  font-size: clamp(9px, 1.9vw, 12px);
+  color: #ffd21f;
+  background: rgba(255, 210, 31, 0.12);
+  border: 2px dashed #ffd21f;
+  padding: 8px 10px;
+  margin: 0;
+  line-height: 1.6;
+}
+
 .botao {
   font-family: 'Press Start 2P', 'Courier New', monospace;
   background: #eaffdf;
@@ -293,6 +304,55 @@ body.pixel {
 .botao:hover { transform: translate(-1px, -1px); box-shadow: 5px 5px 0 #06120a; }
 .botao:active { transform: translate(2px, 2px); box-shadow: 2px 2px 0 #06120a; }
 
+/* ─── Seleção de personagem ─── */
+.personagens {
+  display: flex;
+  gap: 20px;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+.card-personagem {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  background: rgba(234, 255, 223, 0.1);
+  border: 3px solid #58c07a;
+  color: #eaffdf;
+  padding: 18px 24px;
+  cursor: pointer;
+  font-family: 'Press Start 2P', 'Courier New', monospace;
+  box-shadow: 4px 4px 0 rgba(0, 0, 0, 0.5);
+}
+
+.card-personagem.foco {
+  border-color: #ffd21f;
+  box-shadow: 0 0 0 3px #ffd21f, 0 0 20px rgba(255, 210, 31, 0.55);
+}
+
+.cp-avatar {
+  font-size: 46px;
+  line-height: 1;
+}
+
+.cp-tag {
+  font-size: 9px;
+  color: #7bbf92;
+}
+
+.cp-nome {
+  font-size: 11px;
+  color: #ffffff;
+}
+
+.cp-dica {
+  font-family: 'VT323', 'Courier New', monospace;
+  font-size: 16px;
+  color: #cfe8c0;
+  margin: 6px 0 0;
+}
+
 /* ─── Mapa das fases ─── */
 .overlay-mapa {
   background: radial-gradient(circle at 50% 30%, rgba(47, 122, 61, 0.55), rgba(10, 28, 14, 0.96));
@@ -308,47 +368,43 @@ body.pixel {
 }
 
 .mapa {
-  display: flex;
-  flex-direction: column;
-  gap: 16px;
-  width: min(430px, 94%);
-  max-height: 100%;
-  overflow-y: auto;
+  position: relative;
+  width: min(380px, 92%);
+  height: min(300px, 62vh);
 }
 
-.capitulo {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
+.mapa-caminho {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
 }
 
-.cap-nome {
-  font-family: 'Press Start 2P', 'Courier New', monospace;
-  font-size: clamp(7px, 1.8vw, 11px);
-  color: #ffd21f;
-  text-align: center;
-  text-shadow: 1px 1px 0 #000;
-}
-
-.cap-nodos {
-  display: flex;
-  justify-content: center;
-  gap: 14px;
+.mapa-caminho path {
+  fill: none;
+  stroke: #ffd21f;
+  stroke-width: 4;
+  stroke-dasharray: 8 7;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  opacity: 0.85;
 }
 
 .nodo {
-  position: relative;
+  position: absolute;
+  transform: translate(-50%, -50%);
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 5px;
-  background: rgba(234, 255, 223, 0.14);
+  gap: 4px;
+  background: rgba(234, 255, 223, 0.16);
   border: 3px solid #58c07a;
   color: #eaffdf;
-  padding: 10px 16px;
+  padding: 8px 12px;
   cursor: pointer;
   font-family: 'Press Start 2P', 'Courier New', monospace;
   box-shadow: 3px 3px 0 rgba(0, 0, 0, 0.5);
+  z-index: 2;
 }
 
 .nodo:hover:not(:disabled) {
@@ -388,17 +444,13 @@ body.pixel {
 }
 
 .nodo-emoji {
-  font-size: 24px;
+  font-size: 22px;
   line-height: 1;
 }
 
 .nodo-num {
   font-size: 7px;
-}
-
-.nodo-nome {
-  font-size: clamp(8px, 1.8vw, 11px);
-  text-transform: uppercase;
+  color: #ffd21f;
 }
 
 .cadeado {

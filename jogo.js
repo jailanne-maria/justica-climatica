@@ -52,6 +52,18 @@ function paleta() {
   return PALETAS[faseAtual] || PALETAS[0];
 }
 
+/* ===== Avisos por fase (mostrados antes de entrar) ===== */
+const AVISOS = [
+  'Aprenda a andar e pular',
+  'Cuidado com o gado na trilha',
+  'Desvie do gado e colete as memórias',
+  'Saltos mais longos pela frente',
+  'Trecho com fogo e gado',
+  'Caminho com mais obstáculos',
+  'Desafio: muito gado e fogo',
+  'Última etapa: cuidado redobrado'
+];
+
 function distribuirMoedas(chao) {
   const moedas = [];
   for (const [x, w] of chao) {
@@ -196,9 +208,11 @@ let pontos = 0;
 let vidas = 3;
 let fasesDesbloqueadas = 1;
 let focoMapa = 0;
+let personagemEscolhido = 'menina';
+let focoPersonagem = 0;
 let registros = [];
 let cadernoAberto = false;
-let estado = 'inicio'; // inicio | mapa | fase | jogando | fim
+let estado = 'inicio'; // inicio | personagem | mapa | fase | jogando | fim
 
 let jogador = { x: 60, y: 200, vx: 0, vy: 0, noChao: false, invencivel: false, invTimer: 0, olhandoDir: 1 };
 let plataformas = [];
@@ -221,8 +235,8 @@ const el = {
   hudFase: document.getElementById('hud-fase'),
   hudPontos: document.getElementById('hud-pontos-valor'),
   hudVidas: document.getElementById('hud-vidas'),
-  hudPersonagem: document.getElementById('hud-personagem'),
   telaInicio: document.getElementById('tela-inicio'),
+  telaPersonagem: document.getElementById('tela-personagem'),
   telaMapa: document.getElementById('tela-mapa'),
   telaCaderno: document.getElementById('tela-caderno'),
   telaFase: document.getElementById('tela-fase'),
@@ -232,6 +246,7 @@ const el = {
   faseTexto: document.getElementById('fase-texto'),
   faseFato: document.getElementById('fase-fato'),
   faseFonte: document.getElementById('fase-fonte'),
+  faseAviso: document.getElementById('fase-aviso'),
   fimTitulo: document.getElementById('fim-titulo'),
   fimMensagem: document.getElementById('fim-mensagem')
 };
@@ -276,6 +291,24 @@ function iniciarJogo() {
   el.telaFim.hidden = true;
   el.hud.hidden = false;
   iniciarMusica();
+  mostrarPersonagem();
+}
+
+function mostrarPersonagem() {
+  estado = 'personagem';
+  focoPersonagem = 0;
+  el.telaPersonagem.hidden = false;
+  atualizarFocoPersonagem();
+}
+
+function atualizarFocoPersonagem() {
+  document.getElementById('botao-menina').classList.toggle('foco', focoPersonagem === 0);
+  document.getElementById('botao-menino').classList.toggle('foco', focoPersonagem === 1);
+}
+
+function escolherPersonagem(tipo) {
+  personagemEscolhido = tipo;
+  el.telaPersonagem.hidden = true;
   mostrarMapa();
 }
 
@@ -294,35 +327,30 @@ function moverFoco(d) {
 
 function montarMapa() {
   const mapa = document.getElementById('mapa');
-  mapa.innerHTML = '';
-  let indice = 0;
-  CAPITULOS.forEach((capNome, ci) => {
-    const cap = document.createElement('div');
-    cap.className = 'capitulo';
-    const capTitulo = document.createElement('div');
-    capTitulo.className = 'cap-nome';
-    capTitulo.textContent = 'Capítulo ' + (ci + 1) + ' · ' + capNome;
-    cap.appendChild(capTitulo);
-    const capNodos = document.createElement('div');
-    capNodos.className = 'cap-nodos';
-    for (let j = 0; j < 2 && indice < FASES.length; j++) {
-      const idx = indice;
-      const f = FASES[idx];
-      const nodo = document.createElement('button');
-      nodo.className = 'nodo';
-      nodo.id = 'nodo-' + idx;
-      nodo.innerHTML = `
-        <span class="nodo-emoji">${f.emoji}</span>
-        <span class="nodo-num">${idx + 1}</span>
-        <span class="nodo-nome">${f.curto}</span>
-        <span class="cadeado">🔒</span>
-      `;
-      nodo.addEventListener('click', () => jogarFase(idx));
-      capNodos.appendChild(nodo);
-      indice++;
-    }
-    cap.appendChild(capNodos);
-    mapa.appendChild(cap);
+  const POSICOES = [
+    [30, 82], [70, 82], [70, 62], [30, 62], [30, 42], [70, 42], [70, 22], [30, 22]
+  ];
+  let d = '';
+  POSICOES.forEach(([x, y], i) => { d += (i === 0 ? 'M' : 'L') + x + ' ' + y + ' '; });
+  mapa.innerHTML = `
+    <svg class="mapa-caminho" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true">
+      <path d="${d.trim()}" />
+    </svg>
+  `;
+  FASES.forEach((f, i) => {
+    const [x, y] = POSICOES[i];
+    const nodo = document.createElement('button');
+    nodo.className = 'nodo';
+    nodo.id = 'nodo-' + i;
+    nodo.style.left = x + '%';
+    nodo.style.top = y + '%';
+    nodo.innerHTML = `
+      <span class="nodo-num">${i + 1}</span>
+      <span class="nodo-emoji">${f.emoji}</span>
+      <span class="cadeado">🔒</span>
+    `;
+    nodo.addEventListener('click', () => jogarFase(i));
+    mapa.appendChild(nodo);
   });
 }
 
@@ -375,6 +403,7 @@ function mostrarIntroFase() {
   el.faseTexto.textContent = f.texto;
   el.faseFato.textContent = f.fato;
   el.faseFonte.textContent = f.fonte;
+  el.faseAviso.textContent = '⚠️ Aviso: ' + (AVISOS[faseAtual] || 'Boa sorte!');
   el.telaFase.hidden = false;
   estado = 'fase';
 }
@@ -427,7 +456,6 @@ function machucar() {
 
 function atualizarHud() {
   el.hudFase.textContent = String(faseAtual + 1).padStart(2, '0');
-  el.hudPersonagem.textContent = FASES[faseAtual].personagem;
   el.hudPontos.textContent = pontos;
   el.hudVidas.textContent = '❤️'.repeat(Math.max(0, vidas)) + '🖤'.repeat(Math.max(0, 3 - vidas));
 }
@@ -936,11 +964,10 @@ function desenharObjetivo() {
 
 function coresDoPersonagem(nome) {
   const mapa = {
-    'Raimundo': { camisa: '#c89450', camisaEsc: '#9c6a2f', camisaClara: '#e0b070', calca: '#5b3a1e', calcaEsc: '#4a2d16', gorro: '#7a4a22', gorroEsc: '#5b3a1e' },
-    'Antônio': { camisa: '#5a7a3a', camisaEsc: '#3f5a28', camisaClara: '#7a9a52', calca: '#3a3a3a', calcaEsc: '#2a2a2a', gorro: '#4a5a2a', gorroEsc: '#33401d' },
-    'Rosa': { camisa: '#d94f8c', camisaEsc: '#a8356a', camisaClara: '#f07fb0', calca: '#4a3a6a', calcaEsc: '#3a2d55', gorro: '#8c3f6a', gorroEsc: '#5f2a4a' }
+    'menina': { camisa: '#d94f8c', camisaEsc: '#a8356a', camisaClara: '#f07fb0', calca: '#4a3a6a', calcaEsc: '#3a2d55', gorro: '#8c3f6a', gorroEsc: '#5f2a4a' },
+    'menino': { camisa: '#c89450', camisaEsc: '#9c6a2f', camisaClara: '#e0b070', calca: '#5b3a1e', calcaEsc: '#4a2d16', gorro: '#7a4a22', gorroEsc: '#5b3a1e' }
   };
-  return mapa[nome] || mapa['Raimundo'];
+  return mapa[nome] || mapa['menino'];
 }
 
 function desenharJogador() {
@@ -948,7 +975,7 @@ function desenharJogador() {
   if (p.invencivel && Math.floor(Date.now() / 100) % 2 === 0) return;
   const x = Math.round(p.x - cameraX);
   const y = Math.round(p.y);
-  const c = coresDoPersonagem(FASES[faseAtual].personagem);
+  const c = coresDoPersonagem(personagemEscolhido);
   const dir = p.olhandoDir;
   const OUT = '#140a06';
   const PELE = '#e8b882';
@@ -1053,8 +1080,6 @@ function desenharJogador() {
   ctx.fillRect(x + 9, y - 14 - fl, 2, 3);
   ctx.fillStyle = '#ffd21f';
   ctx.fillRect(x + 10, y - 13 - fl, 1, 2);
-
-  desenharRotulo(x + 11, y - 23, FASES[faseAtual].personagem.toUpperCase());
 }
 
 function loop() {
@@ -1071,16 +1096,23 @@ function loop() {
 window.addEventListener('keydown', (e) => {
   const k = e.key.toLowerCase();
   if (k === 'arrowleft' || k === 'a') {
-    teclas.esq = true;
-    if (estado === 'mapa') moverFoco(-1);
+    if (estado === 'personagem') { focoPersonagem = 0; atualizarFocoPersonagem(); }
+    else {
+      teclas.esq = true;
+      if (estado === 'mapa') moverFoco(-1);
+    }
   }
   if (k === 'arrowright' || k === 'd') {
-    teclas.dir = true;
-    if (estado === 'mapa') moverFoco(1);
+    if (estado === 'personagem') { focoPersonagem = 1; atualizarFocoPersonagem(); }
+    else {
+      teclas.dir = true;
+      if (estado === 'mapa') moverFoco(1);
+    }
   }
   if (k === 'arrowup' || k === 'w' || k === ' ') {
     e.preventDefault();
-    if (estado === 'mapa') jogarFase(focoMapa);
+    if (estado === 'personagem') escolherPersonagem(focoPersonagem === 0 ? 'menina' : 'menino');
+    else if (estado === 'mapa') jogarFase(focoMapa);
     else pular();
   }
   if (k === 'e') extrairLatexProximo();
@@ -1090,6 +1122,7 @@ window.addEventListener('keydown', (e) => {
   }
   if (k === 'enter') {
     if (estado === 'inicio') iniciarJogo();
+    else if (estado === 'personagem') escolherPersonagem(focoPersonagem === 0 ? 'menina' : 'menino');
     else if (estado === 'mapa') jogarFase(focoMapa);
     else if (estado === 'fase') continuarFase();
     else if (estado === 'fim') reiniciar();
@@ -1172,9 +1205,15 @@ function processarGamepad() {
 
     const justPressed = (i) => gp.buttons[i] && gp.buttons[i].pressed && !prev[i];
 
+    if (estado === 'personagem') {
+      if (justPressed(14)) { focoPersonagem = 0; atualizarFocoPersonagem(); }
+      if (justPressed(15)) { focoPersonagem = 1; atualizarFocoPersonagem(); }
+    }
+
     if (justPressed(0)) {
       if (estado === 'jogando') pular();
       else if (estado === 'inicio') iniciarJogo();
+      else if (estado === 'personagem') escolherPersonagem(focoPersonagem === 0 ? 'menina' : 'menino');
       else if (estado === 'mapa') jogarFase(fasesDesbloqueadas - 1);
       else if (estado === 'fase') continuarFase();
       else if (estado === 'fim') reiniciar();
@@ -1415,6 +1454,8 @@ function somVida() {
 
 /* ===== Ligações ===== */
 document.getElementById('botao-iniciar').addEventListener('click', iniciarJogo);
+document.getElementById('botao-menina').addEventListener('click', () => escolherPersonagem('menina'));
+document.getElementById('botao-menino').addEventListener('click', () => escolherPersonagem('menino'));
 document.getElementById('botao-continuar').addEventListener('click', continuarFase);
 document.getElementById('botao-reiniciar').addEventListener('click', reiniciar);
 document.getElementById('botao-som').addEventListener('click', alternarMusica);
