@@ -978,8 +978,8 @@ function desenharJogador() {
   const c = coresDoPersonagem(personagemEscolhido);
   const dir = p.olhandoDir;
   const OUT = '#140a06';
-  const PELE = '#e8b882';
-  const PELE_E = '#c9976a';
+  const PELE = '#8d5524';
+  const PELE_E = '#6b3f20';
   const andando = p.noChao && Math.abs(p.vx) > 0.1;
   const passo = andando ? Math.floor(Date.now() / 130) % 2 : 0;
   const fl = Math.floor(Date.now() / 140) % 3;
@@ -1061,7 +1061,7 @@ function desenharJogador() {
   ctx.fillRect(dir > 0 ? x + 12 : x + 6, y + 4, 3, 3);
   ctx.fillStyle = '#140a06';
   ctx.fillRect(dir > 0 ? x + 13 : x + 7, y + 5, 2, 2);
-  ctx.fillStyle = '#a97a52';
+  ctx.fillStyle = '#4a2c12';
   ctx.fillRect(dir > 0 ? x + 11 : x + 8, y + 8, 3, 1);
 
   // poronga (lâmpada de cabeça)
