@@ -1166,17 +1166,26 @@ const NOTAS = {
   A3: 220.00, B3: 246.94,
   C4: 261.63, D4: 293.66, E4: 329.63, F4: 349.23, G4: 392.00,
   A4: 440.00, B4: 493.88, C5: 523.25, D5: 587.33, E5: 659.25,
+  F5: 698.46, G5: 783.99, A5: 880.00,
   B5: 987.77, E6: 1318.51, C6: 1046.50
 };
 
+// padrões de 32 passos (colcheias); null = pausa
 const MELODIA = [
-  ['E4', 1], ['G4', 1], ['A4', 1], ['G4', 1], ['E4', 1], ['G4', 1], ['A4', 1], ['C5', 1],
-  ['D5', 1], ['C5', 1], ['A4', 1], ['G4', 1], ['E4', 1], ['G4', 1], ['A4', 1], ['E4', 1]
+  'E5', 'C5', 'A4', 'C5', 'E5', 'C5', 'A4', 'E4',
+  'C5', 'A4', 'F4', 'A4', 'C5', 'A4', 'F4', 'C4',
+  'E5', 'C5', 'G4', 'C5', 'E5', 'C5', 'G4', 'E4',
+  'D5', 'B4', 'G4', 'B4', 'D5', 'B4', 'G4', 'D4'
 ];
 
 const BAIXO = [
-  ['C3', 2], ['G3', 2], ['A3', 2], ['G3', 2], ['C3', 2], ['G3', 2], ['F3', 2], ['G3', 2]
+  'A3', null, 'A3', null, 'A3', null, 'A3', null,
+  'F3', null, 'F3', null, 'F3', null, 'F3', null,
+  'C3', null, 'C3', null, 'C3', null, 'C3', null,
+  'G3', null, 'G3', null, 'G3', null, 'G3', null
 ];
+
+const PASSOS = MELODIA.length;
 
 let audioCtx = null;
 let musicaLigada = false;
@@ -1184,7 +1193,7 @@ let indiceMelodia = 0;
 let proximoTempo = 0;
 let timerMusica = null;
 let bufferNoise = null;
-const BPM = 172;
+const BPM = 180;
 const SEG_BATIDA = 60 / BPM;
 
 function tocarNota(freq, quando, dur, tipo, volume) {
@@ -1203,16 +1212,16 @@ function tocarNota(freq, quando, dur, tipo, volume) {
 
 function agendarNotas() {
   while (proximoTempo < audioCtx.currentTime + 0.3) {
-    const [notaM, durM] = MELODIA[indiceMelodia % MELODIA.length];
-    tocarNota(NOTAS[notaM], proximoTempo, durM * SEG_BATIDA, 'square', 0.08);
-    if (indiceMelodia % 2 === 0) {
-      const iB = Math.floor(indiceMelodia / 2) % BAIXO.length;
-      tocarNota(NOTAS[BAIXO[iB][0]], proximoTempo, 2 * SEG_BATIDA, 'triangle', 0.13);
-    }
-    tocarBumbo(proximoTempo);
-    tocarChapeu(proximoTempo + SEG_BATIDA * 0.5);
-    proximoTempo += durM * SEG_BATIDA;
-    indiceMelodia += 1;
+    const s = indiceMelodia % PASSOS;
+    const t = proximoTempo;
+    const nMel = MELODIA[s];
+    const nBaixo = BAIXO[s];
+    if (nMel) tocarNota(NOTAS[nMel], t, SEG_BATIDA * 0.45, 'square', 0.09);
+    if (nBaixo) tocarNota(NOTAS[nBaixo], t, SEG_BATIDA * 0.9, 'triangle', 0.15);
+    if (s % 2 === 0) tocarBumbo(t);
+    else tocarChapeu(t);
+    proximoTempo += SEG_BATIDA * 0.5;
+    indiceMelodia++;
   }
 }
 
