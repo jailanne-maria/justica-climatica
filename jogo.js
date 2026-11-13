@@ -36,6 +36,22 @@ const CORES = {
   blocoEsc: '#b87800'
 };
 
+/* ===== Paletas por fase (a cor muda ao longo da jornada) ===== */
+const PALETAS = [
+  { ceu: '#4a86f0', ceuBaixo: '#b8d8ff', colina: '#00a800', colinaLonge: '#3cb73c', grama: '#00a800', gramaEsc: '#006400', gramaClara: '#7bd87b', nuvem: '#ffffff', sol: 'dia' },
+  { ceu: '#3f7ad0', ceuBaixo: '#cfe4ff', colina: '#00a800', colinaLonge: '#4fbf5a', grama: '#00a800', gramaEsc: '#006400', gramaClara: '#7bd87b', nuvem: '#ffffff', sol: 'dia' },
+  { ceu: '#3a70c0', ceuBaixo: '#f0e0b0', colina: '#1f9a38', colinaLonge: '#5abf5a', grama: '#1f9a38', gramaEsc: '#1a7a30', gramaClara: '#8fd87b', nuvem: '#fff8e8', sol: 'dia' },
+  { ceu: '#c06030', ceuBaixo: '#f8c878', colina: '#2f7a3a', colinaLonge: '#6a9a4a', grama: '#2f8a35', gramaEsc: '#246a2a', gramaClara: '#a0c060', nuvem: '#ffe0b0', sol: 'porDoSol' },
+  { ceu: '#3a2a5a', ceuBaixo: '#b0709a', colina: '#1f4a2a', colinaLonge: '#3a6a3a', grama: '#1f6a2a', gramaEsc: '#185022', gramaClara: '#5a8a5a', nuvem: '#c0b0d0', sol: 'lua' },
+  { ceu: '#0f1a3a', ceuBaixo: '#3a4a7a', colina: '#0f3a1f', colinaLonge: '#1f4a2f', grama: '#1a5a2a', gramaEsc: '#124520', gramaClara: '#3a7a4a', nuvem: '#8a8ab0', sol: 'lua' },
+  { ceu: '#1a2548', ceuBaixo: '#6a6a9a', colina: '#123a20', colinaLonge: '#224a30', grama: '#1a5a28', gramaEsc: '#12451f', gramaClara: '#3a7a45', nuvem: '#9a9ab8', sol: 'lua' },
+  { ceu: '#e09050', ceuBaixo: '#fbd8a0', colina: '#2a8a3a', colinaLonge: '#4fbf5a', grama: '#2fae45', gramaEsc: '#248a34', gramaClara: '#7bd87b', nuvem: '#fff0d0', sol: 'dia' }
+];
+
+function paleta() {
+  return PALETAS[faseAtual] || PALETAS[0];
+}
+
 function distribuirMoedas(chao) {
   const moedas = [];
   for (const [x, w] of chao) {
@@ -559,10 +575,11 @@ function desenhar() {
   const f = FASES[faseAtual];
 
   // céu
+  const P = paleta();
   const grad = ctx.createLinearGradient(0, 0, 0, ALTURA);
-  grad.addColorStop(0, CORES.ceuTopo);
-  grad.addColorStop(0.55, CORES.ceu);
-  grad.addColorStop(1, CORES.ceuBaixo);
+  grad.addColorStop(0, P.ceu);
+  grad.addColorStop(0.6, P.ceu);
+  grad.addColorStop(1, P.ceuBaixo);
   ctx.fillStyle = grad;
   ctx.fillRect(0, 0, LARGURA, ALTURA);
 
@@ -584,13 +601,27 @@ function desenhar() {
 
 function desenharSol() {
   const x = 404, y = 32, r = 14;
+  const modo = paleta().sol;
+
+  if (modo === 'lua') {
+    ctx.fillStyle = 'rgba(220, 230, 255, 0.3)';
+    ctx.fillRect(x - 22, y - 22, 44, 44);
+    ctx.fillStyle = '#e8ecf8';
+    ctx.fillRect(x - r, y - r, r * 2, r * 2);
+    ctx.fillStyle = '#c6d0e4';
+    ctx.fillRect(x - r + 4, y - r + 2, 4, 4);
+    ctx.fillRect(x + 3, y - 2, 3, 3);
+    return;
+  }
+
+  const porDoSol = modo === 'porDoSol';
   ctx.fillStyle = 'rgba(255, 240, 160, 0.3)';
   ctx.fillRect(x - 24, y - 24, 48, 48);
   ctx.fillStyle = 'rgba(255, 240, 160, 0.45)';
   ctx.fillRect(x - 18, y - 18, 36, 36);
-  ctx.fillStyle = '#fff3b0';
+  ctx.fillStyle = porDoSol ? '#ffcf8a' : '#fff3b0';
   ctx.fillRect(x - r, y - r, r * 2, r * 2);
-  ctx.fillStyle = '#ffd21f';
+  ctx.fillStyle = porDoSol ? '#ff9a3a' : '#ffd21f';
   ctx.fillRect(x - r + 3, y - r + 3, r * 2 - 6, r * 2 - 6);
 }
 
@@ -612,12 +643,13 @@ function desenharColinaSMB(cx, baseY, altura, largura, corContorno, corCorpo, co
 }
 
 function desenharMontanhas() {
+  const P = paleta();
   const off1 = cameraX * 0.25;
   const p1 = Math.floor(off1 / 260) - 1;
   for (let i = p1; i < p1 + 5; i++) {
     const cx = i * 260 - off1;
     const topo = 120 + (((i % 2) + 2) % 2) * 20;
-    desenharColinaSMB(cx, ALTURA, ALTURA - topo, 150, '#006400', '#3cb73c', '#7bd87b');
+    desenharColinaSMB(cx, ALTURA, ALTURA - topo, 150, P.gramaEsc, P.colinaLonge, P.gramaClara);
   }
 
   const off2 = cameraX * 0.4;
@@ -625,28 +657,24 @@ function desenharMontanhas() {
   for (let i = p2; i < p2 + 6; i++) {
     const cx = i * 200 - off2;
     const topo = 182 + (((i % 2) + 2) % 2) * 24;
-    desenharColinaSMB(cx, ALTURA, ALTURA - topo, 120, '#006400', '#00a800', '#7bd87b');
+    desenharColinaSMB(cx, ALTURA, ALTURA - topo, 120, P.gramaEsc, P.colina, P.gramaClara);
   }
 }
 
 function desenharNuvens() {
+  const P = paleta();
   const desloca = (Date.now() * 0.01 + cameraX * 0.2) % 900;
   for (let i = 0; i < 6; i++) {
     const cx = ((i * 160 - desloca) % 900 + 900) % 900 - 80;
     const cy = 24 + (i % 3) * 28;
-    // sombra
-    ctx.fillStyle = '#d8e6f0';
+    ctx.fillStyle = 'rgba(0, 0, 0, 0.12)';
     ctx.fillRect(cx, cy + 3, 38, 8);
     ctx.fillRect(cx + 8, cy - 5, 20, 8);
     ctx.fillRect(cx + 4, cy - 1, 30, 6);
-    // corpo
-    ctx.fillStyle = '#ffffff';
+    ctx.fillStyle = P.nuvem;
     ctx.fillRect(cx, cy, 38, 8);
     ctx.fillRect(cx + 8, cy - 8, 20, 8);
     ctx.fillRect(cx + 4, cy - 4, 30, 6);
-    // brilho
-    ctx.fillStyle = '#f7fbff';
-    ctx.fillRect(cx + 4, cy - 6, 22, 4);
   }
 }
 
@@ -715,6 +743,7 @@ function desenharArvores() {
 }
 
 function desenharPlataformas() {
+  const P = paleta();
   for (const plat of plataformas) {
     const x = plat.x - cameraX;
     const w = plat.w, y = plat.y, h = plat.h;
@@ -746,11 +775,11 @@ function desenharPlataformas() {
 
     // grama (só no chão)
     if (ehChao) {
-      ctx.fillStyle = CORES.gramaEsc;
+      ctx.fillStyle = P.gramaEsc;
       ctx.fillRect(x, y, w, 8);
-      ctx.fillStyle = CORES.grama;
+      ctx.fillStyle = P.grama;
       ctx.fillRect(x, y, w, 6);
-      ctx.fillStyle = CORES.gramaClara;
+      ctx.fillStyle = P.gramaClara;
       ctx.fillRect(x, y, w, 2);
     }
   }
