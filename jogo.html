@@ -3,6 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <meta name="theme-color" content="#153f35">
   <meta name="description" content="Caminhos da Seringa: plataforma 2D sobre a história dos seringueiros do Acre, em 8 fases.">
   <title>Caminhos da Seringa</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -13,13 +14,28 @@
 </head>
 <body class="pixel">
   <div class="jogo2d">
-    <div class="stage" id="stage">
+    <div class="console">
+      <div class="console-topline">
+        <span class="live-dot"></span>
+        <span class="console-titulo">ACRE, AMAZÔNIA</span>
+        <span class="console-direita">8 capítulos · uma história coletiva</span>
+      </div>
+      <div class="stage" id="stage">
       <canvas id="tela" width="480" height="270"></canvas>
+      <div class="vignette" aria-hidden="true"></div>
 
       <div class="hud2d" id="hud2d" hidden>
-        <span class="hud-tag" id="hud-fase">Fase 1</span>
-        <span class="hud-pontos">🪙 <span id="hud-pontos-valor">0</span></span>
-        <span class="hud-vidas" id="hud-vidas">❤️❤️❤️</span>
+        <div class="hud-esquerda">
+          <span class="hud-capitulo" id="hud-fase">01</span>
+          <div class="hud-info">
+            <span class="hud-nome" id="hud-personagem">Raimundo</span>
+            <span class="hud-objetivo">Encontre as memórias</span>
+          </div>
+        </div>
+        <div class="hud-direita">
+          <span class="hud-vidas" id="hud-vidas">❤️❤️❤️</span>
+          <span class="hud-sementes">🍃 <b id="hud-pontos-valor">0</b></span>
+        </div>
       </div>
 
       <div class="overlay overlay-centro" id="tela-inicio">
@@ -55,6 +71,7 @@
         <div class="mapa-titulo">Caderno da Memória</div>
         <div class="caderno" id="caderno-lista"></div>
         <button class="botao" id="botao-caderno-fechar">Fechar</button>
+      </div>
       </div>
     </div>
   </div>

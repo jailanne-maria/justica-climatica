@@ -205,6 +205,7 @@ const el = {
   hudFase: document.getElementById('hud-fase'),
   hudPontos: document.getElementById('hud-pontos-valor'),
   hudVidas: document.getElementById('hud-vidas'),
+  hudPersonagem: document.getElementById('hud-personagem'),
   telaInicio: document.getElementById('tela-inicio'),
   telaMapa: document.getElementById('tela-mapa'),
   telaCaderno: document.getElementById('tela-caderno'),
@@ -409,7 +410,8 @@ function machucar() {
 }
 
 function atualizarHud() {
-  el.hudFase.textContent = FASES[faseAtual].nome;
+  el.hudFase.textContent = String(faseAtual + 1).padStart(2, '0');
+  el.hudPersonagem.textContent = FASES[faseAtual].personagem;
   el.hudPontos.textContent = pontos;
   el.hudVidas.textContent = '❤️'.repeat(Math.max(0, vidas)) + '🖤'.repeat(Math.max(0, 3 - vidas));
 }
